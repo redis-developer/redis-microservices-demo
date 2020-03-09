@@ -4,6 +4,11 @@ Demonstration:
 
 [![](http://img.youtube.com/vi/UbIp92_CTCQ/0.jpg)](http://www.youtube.com/watch?v=UbIp92_CTCQ "CDC in Action")
 
+The current data model and cache is really simple (and not realistic):
+ * 1 row = 1 key in Redis
+
+Just this first release as a proof of concept.
+
 
 ### Building and Running the Service
 
