@@ -3,7 +3,7 @@
 
 ### Building and Running the Service
 
-####1- Start MySQL with Debezium sample dataset
+#### 1- Start MySQL with Debezium sample dataset
 
 Run this command to start MySQL in a Docker container.
 
@@ -42,7 +42,7 @@ mysql> SELECT * FROM customers;
 
 (Note: I need to check, since it should not be necessary since it is present in the [SQL script](https://github.com/debezium/docker-images/blob/master/examples/mysql/1.1/inventory.sql#L12).)
 
-####2- Start Redis is not already present
+#### 2- Start Redis is not already present
 
 Let's start Redis, for example with Docker:
 
@@ -66,7 +66,7 @@ run the following command to check that the Redis database is empty:
 ```
 
 
-####3- Run the Cache Invalidation Service
+#### 3- Run the Cache Invalidation Service
 
 You if you are not using the default ports, and running the databases locally open 
 the `./src/main/resources/application.properties` file and edit the properties.
