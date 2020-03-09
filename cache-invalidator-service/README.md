@@ -1,5 +1,9 @@
 # Redis Cache Invalidation Service
 
+Demonstration:
+
+[![](http://img.youtube.com/vi/UbIp92_CTCQ/0.jpg)](http://www.youtube.com/watch?v=UbIp92_CTCQ "CDC in Action")
+
 
 ### Building and Running the Service
 
