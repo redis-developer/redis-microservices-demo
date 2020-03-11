@@ -57,12 +57,15 @@ public class ConnectorConfig {
     public io.debezium.config.Configuration createConnectorConfig() {
         Properties props = new Properties();
         props.setProperty("name", "engine");
-        props.setProperty("connector.class",  "io.debezium.connector.mysql.MySqlConnector");
+//        props.setProperty("connector.class",  "io.debezium.connector.mysql.MySqlConnector"); // MySQL
+        props.setProperty("connector.class",  "io.debezium.connector.postgresql.PostgresConnector"); // PostgreSQL
+
         props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
         props.setProperty("offset.storage.file.filename", "./offsets.dat");
         props.setProperty("offset.flush.interval.ms", "5000");
 
         props.setProperty("database.hostname", databaseHostname);
+        props.setProperty("database.dbname", databaseName);
         props.setProperty("database.name", databaseName);
         props.setProperty("database.port", databasePort);
         props.setProperty("database.user", databaseUser);

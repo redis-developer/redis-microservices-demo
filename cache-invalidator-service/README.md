@@ -155,3 +155,32 @@ The key `inventory:customers:id:1005` is not present in Redis anymore.
 You can change the configuration to:
 * no save any data in Redis from the CDC Event, and only use Redis Service to delete updated/deleted keys `redis.setValue=false`
 * only send data when a record is updated not created `redis.setOnInsert=false`
+
+
+## Using PostgreSQL
+
+
+**Start Debezium Inventory database**
+
+```
+$ docker run -it --rm --name postgres \
+   -p 5432:5432 \
+   -e POSTGRES_USER=postgres \
+   -e POSTGRES_PASSWORD=postgres \
+   debezium/example-postgres
+```
+You can discover the schema in another terminal:
+
+```
+$ docker run -it --rm --name psql_client \
+   -e PGOPTIONS="--search_path=inventory" \
+   -e PGPASSWORD=postgres \
+   --link postgres:postgres debezium/example-postgres \
+   psql -h postgres -U postgres
+```
+
+**Update Debezium engine con
+
+*Note: project will be updated to provide external configuration to allow to use MySQL or PostgresSQL without rebuild*
+
+
