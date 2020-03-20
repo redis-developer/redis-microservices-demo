@@ -53,14 +53,20 @@ public class ConnectorConfig {
     @Value("${table.whitelist}")
     private String tableWhitelist;
 
+
     @Bean
     public io.debezium.config.Configuration createConnectorConfig() {
         Properties props = new Properties();
         props.setProperty("name", "engine");
         props.setProperty("connector.class",  "io.debezium.connector.mysql.MySqlConnector");
+        //  use Redis as a offset manager => embedded engine
+        // make is isolated to be sure that we could extend
         props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
         props.setProperty("offset.storage.file.filename", "./offsets.dat");
         props.setProperty("offset.flush.interval.ms", "5000");
+        // look at snapshot.mode in https://debezium.io/documentation/reference/1.0/assemblies/cdc-mysql-connector/as_deploy-the-mysql-connector.html
+        // upgrade to 1.1RC
+        // https://debezium.io/documentation/reference/1.1/development/engine.html
 
         props.setProperty("database.hostname", databaseHostname);
         props.setProperty("database.name", databaseName);
@@ -75,5 +81,7 @@ public class ConnectorConfig {
 
         return io.debezium.config.Configuration.from(props);
     }
+
+
 
 }

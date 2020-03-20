@@ -57,6 +57,9 @@ public class RedisCacheService {
      * @param cdcEvent
      */
     public void updateRedis(Map<String, Object> cdcEvent) {
+
+        System.out.println(cdcEvent);
+
         Map<String,Object> header = (Map<String, Object>) cdcEvent.get("header");
         Map<String,Object> body = (Map<String, Object>) cdcEvent.get("body");
         String db = header.get("source.db").toString();

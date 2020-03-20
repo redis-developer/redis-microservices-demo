@@ -19,9 +19,11 @@ package io.redis.demos.debezium.listener;
 
 import io.debezium.config.Configuration;
 import io.debezium.data.Envelope.Operation;
-import io.debezium.embedded.EmbeddedEngine;
 import static io.debezium.data.Envelope.FieldName.*;
 
+import io.debezium.embedded.Connect;
+import io.debezium.embedded.EmbeddedEngine;
+import io.debezium.engine.DebeziumEngine;
 import io.redis.demos.debezium.service.RedisCacheService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,10 +35,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -47,38 +52,44 @@ import static java.util.stream.Collectors.toMap;
 @org.springframework.context.annotation.Configuration
 public class CDCEventListener {
 
-    @Value("${database.server.name}")
-    private String databaseServerName;
-
-    @Value("${database.name}")
-    private String databaseName;
-
     private String topicName;
 
 
     // Thread for the Debezium engine
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    // Debezium embedded engine
-    private final EmbeddedEngine debeziumEngine;
 
     // Service layer to interact with Redis
     private final RedisCacheService redisCacheService;
 
-    public CDCEventListener(Configuration config, RedisCacheService service) {
-        log.info("====> ");
-        debeziumEngine = EmbeddedEngine.create()
-                .using(config)
-                .notifying(this::handleEvent)
-                .build();
+    public CDCEventListener(Configuration config, RedisCacheService service) throws IOException {
+
+        try (DebeziumEngine<SourceRecord> engine = DebeziumEngine.create(Connect.class)
+                .using(config.asProperties())
+                .notifying(record -> {
+                    handleEvent(record);
+                }).build()
+        ) {
+            Executors.newSingleThreadExecutor().execute(engine);
+
+            // Run the engine asynchronously ...
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(engine);
+            // Do something else or wait for a signal or an event
+        }
+
+        topicName = config.getString("database.server.name") +"."+ config.getString("database.name")  +".";
         redisCacheService = service;
     }
+
+
 
     /**
      * Capture CDC Event if event is from the proper DB/Table send it to @RedisCacheService
      * @param record
      */
     private void handleEvent(SourceRecord record) {
+
 
         // check of the events is sent to the proper topic that is the server-name and database
         if (record.topic().startsWith( topicName )) {
@@ -122,23 +133,5 @@ public class CDCEventListener {
     }
 
 
-    /**
-     * Start the Debezium engine
-     */
-    @PostConstruct
-    private void start() {
-        topicName = databaseServerName+"."+ databaseName +".";
-        this.executor.execute(debeziumEngine);
-    }
-
-    /**
-     * Stop Debezium engine
-     */
-    @PreDestroy
-    private void stop() {
-        if (this.debeziumEngine != null) {
-            this.debeziumEngine.stop();
-        }
-    }
 
 }

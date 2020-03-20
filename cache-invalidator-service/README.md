@@ -22,7 +22,7 @@ $ docker run -it --rm --name mysql \
      -e MYSQL_ROOT_PASSWORD=debezium \
      -e MYSQL_USER=mysqluser \
      -e MYSQL_PASSWORD=mysqlpw \
-     debezium/example-mysql:1.0
+     debezium/example-mysql:1.1
 ```
 
 This container is configured to support [Debezium MySQL Connector](https://debezium.io/documentation/reference/1.0/connectors/mysql.html).
@@ -34,7 +34,7 @@ Connect to MySQL Command Line client:
 $ docker run -it --rm --name mysqlterm \
      --link mysql \
      --rm mysql:5.7 \
-     sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
+     sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -umysqluser -pmysqlpw'
 ```
 
 and run the following command: 
