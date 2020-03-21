@@ -47,6 +47,9 @@ public class ConnectorConfig {
     @Value("${database.password}")
     private String databasePassword;
 
+    @Value("${database.server.id}")
+    private String databaseServerId;
+
     @Value("${database.server.name}")
     private String databaseServerName;
 
@@ -66,7 +69,7 @@ public class ConnectorConfig {
         props.setProperty("database.port", databasePort);
         props.setProperty("database.user", databaseUser);
         props.setProperty("database.password", databasePassword);
-        props.setProperty("database.server.id", "5545");
+        props.setProperty("database.server.id", databaseServerId);
         props.setProperty("database.server.name", databaseServerName);
         props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory");
         props.setProperty("database.history.file.filename", "./dbhistory.dat");

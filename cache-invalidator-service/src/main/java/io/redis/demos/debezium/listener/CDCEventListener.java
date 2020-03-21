@@ -87,7 +87,6 @@ public class CDCEventListener {
      */
     private void handleEvent(SourceRecord record) {
 
-
         // check of the events is sent to the proper topic that is the server-name and database
         if (record.topic().startsWith( topicName )) {
             Struct payload = (Struct) record.value();
