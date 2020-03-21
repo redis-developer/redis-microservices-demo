@@ -71,11 +71,8 @@ public class CDCEventListener {
                 }).build()
         ) {
             Executors.newSingleThreadExecutor().execute(engine);
-
-            // Run the engine asynchronously ...
             ExecutorService executor = Executors.newSingleThreadExecutor();
             executor.execute(engine);
-            // Do something else or wait for a signal or an event
         }
 
         topicName = config.getString("database.server.name") +"."+ config.getString("database.name")  +".";
