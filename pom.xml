@@ -27,6 +27,7 @@
         <version.jredisgraph>2.0.3-SNAPSHOT</version.jredisgraph>
         <version.debezium>1.1.0.Final</version.debezium>
         <version.springboot>2.2.5.RELEASE</version.springboot>
+        <version.javax.inject>1</version.javax.inject>
     </properties>
 
 

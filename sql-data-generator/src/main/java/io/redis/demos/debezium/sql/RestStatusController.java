@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class RestStatusController {
 
-    @Autowired JdbcTemplate jdbcTemplate;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 

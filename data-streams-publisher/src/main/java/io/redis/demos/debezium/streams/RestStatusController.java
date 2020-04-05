@@ -32,7 +32,7 @@ public class RestStatusController {
         return result;
     }
 
-    @GetMapping("/restart")
+    @GetMapping("/start")
     public Map<String,String> start() throws IOException {
         Map<String,String> result = new HashMap<>();
 

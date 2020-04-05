@@ -18,16 +18,16 @@ Todo:
 
 ## Build and Run with Docker
 
-``
+```
 $ mvn clean package
 
 $ docker-compose up --build
 
-``
+```
 
 Cleanup
 
-```json
+```
 
 $ docker-compose down -v --rmi local --remove-orphans
 

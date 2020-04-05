@@ -41,16 +41,18 @@ services:
 # mysql -udebezium -pdbz
 
 
-#  graph-sync-service:
-#    build:
-#      context: ./data-streams-to-graph
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8081:8081"
-#    networks:
-#      - cdc-demos-network
-#    restart: always
-#
+  graph-sync-service:
+    build:
+      context: ./data-streams-to-graph
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      - cdc-demos-network
+    restart: always
+    depends_on:
+      - mysql-debezium-service
+      - redis-service
 
   data-generator-service:
     build:
