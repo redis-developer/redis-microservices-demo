@@ -1,0 +1,82 @@
+version: '3.7'
+services:
+
+  redis-service:
+    image: redislabs/redisgraph
+    ports:
+      - "6379:6379"
+    networks:
+      - cdc-demos-network
+    restart: always
+
+  mysql-debezium-service:
+    build:
+      context: ./mysql-database
+      dockerfile: Dockerfile
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=debezium
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=mysqlpw
+    networks:
+      - cdc-demos-network
+    restart: always
+
+  cdc-redis-streams-sync-service:
+    build:
+      context: ./data-streams-publisher
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - cdc-demos-network
+    restart: always
+    depends_on:
+      - mysql-debezium-service
+      - redis-service
+
+# mysql -umysqluser -pmysqlpw inventory
+# mysql -uroot -pdebezium
+# mysql -udebezium -pdbz
+
+
+#  graph-sync-service:
+#    build:
+#      context: ./data-streams-to-graph
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8081:8081"
+#    networks:
+#      - cdc-demos-network
+#    restart: always
+#
+
+  data-generator-service:
+    build:
+      context: ./sql-data-generator
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - cdc-demos-network
+    depends_on:
+      - mysql-debezium-service
+    restart: always
+
+  cache-invalidation-service:
+    build:
+      context: ./cache-invalidator-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    networks:
+      - cdc-demos-network
+    depends_on:
+      - mysql-debezium-service
+      - redis-service
+    restart: always
+
+networks:
+  cdc-demos-network:
+    driver: bridge

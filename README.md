@@ -14,3 +14,21 @@ Todo:
 
 * show how to integrate RedisGraph and Search to enrich RDBMS application
 
+
+
+## Build and Run with Docker
+
+``
+$ mvn clean package
+
+$ docker-compose up --build
+
+``
+
+Cleanup
+
+```json
+
+$ docker-compose down -v --rmi local --remove-orphans
+
+```

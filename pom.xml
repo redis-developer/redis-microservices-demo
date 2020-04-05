@@ -16,12 +16,16 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>cache-invalidator-service</module>
+        <module>data-streams-publisher</module>
+        <module>sql-data-generator</module>
+        <module>data-streams-to-graph</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
         <version.jedis>3.2.0</version.jedis>
-        <version.debezium>1.1.0.CR1</version.debezium>
+        <version.jredisgraph>2.0.3-SNAPSHOT</version.jredisgraph>
+        <version.debezium>1.1.0.Final</version.debezium>
         <version.springboot>2.2.5.RELEASE</version.springboot>
     </properties>
 

@@ -9,45 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cache-invalidator-service</artifactId>
-    <description>Spring Boot app that listen to CDC event and update Redis</description>
-
+    <artifactId>sql-data-generator</artifactId>
 
     <dependencies>
-
-        <!-- Debezium Engine & API (embedded) -->
+        <!-- MySQL JDBC driver -->
         <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-api</artifactId>
-            <version>${version.debezium}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-embedded</artifactId>
-            <version>${version.debezium}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Debezium MySQL Connector -->
-        <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-connector-mysql</artifactId>
-            <version>${version.debezium}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>${version.jedis}</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
         <!-- SpringBoot related dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -59,6 +35,14 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+
 
     <build>
         <plugins>
@@ -86,5 +70,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

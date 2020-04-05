@@ -9,12 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cache-invalidator-service</artifactId>
-    <description>Spring Boot app that listen to CDC event and update Redis</description>
-
+    <artifactId>data-streams-publisher</artifactId>
 
     <dependencies>
-
         <!-- Debezium Engine & API (embedded) -->
         <dependency>
             <groupId>io.debezium</groupId>
@@ -46,8 +43,8 @@
             <artifactId>jedis</artifactId>
             <version>${version.jedis}</version>
         </dependency>
-
         <!-- SpringBoot related dependencies -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -59,6 +56,14 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+
 
     <build>
         <plugins>
@@ -86,5 +91,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

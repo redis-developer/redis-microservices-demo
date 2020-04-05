@@ -9,42 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cache-invalidator-service</artifactId>
-    <description>Spring Boot app that listen to CDC event and update Redis</description>
-
+    <artifactId>data-streams-to-graph</artifactId>
 
     <dependencies>
 
-        <!-- Debezium Engine & API (embedded) -->
         <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-api</artifactId>
-            <version>${version.debezium}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-embedded</artifactId>
-            <version>${version.debezium}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Debezium MySQL Connector -->
-        <dependency>
-            <groupId>io.debezium</groupId>
-            <artifactId>debezium-connector-mysql</artifactId>
-            <version>${version.debezium}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>${version.jedis}</version>
+            <groupId>com.redislabs</groupId>
+            <artifactId>jredisgraph</artifactId>
+            <version>${version.jredisgraph}</version>
         </dependency>
 
         <!-- SpringBoot related dependencies -->
@@ -60,9 +32,16 @@
 
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+
+
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -85,6 +64,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
 
 </project>
