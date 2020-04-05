@@ -162,21 +162,25 @@ public class RedisStreamToGraphService {
                                     movie.put("year", Integer.parseInt(data.get("release_year")));
                                     movie.put("movie_id", Integer.parseInt(data.get("movie_id")));
 
-                                    // TODO : manage update
+                                    // TODO : manage update failures and ack
                                     if ( data.get("source.operation").equalsIgnoreCase("CREATE") ) {
                                         graph.query(graphname, "MERGE (:movie{title:$title,genre:$genre,year:$year,votes:$votes,rating:$rating, movie_id:$movie_id})", movie);
                                         createRelationFromMySQL( "movie", Integer.parseInt(data.get("movie_id")));
-
-
-                                        jedis.xack(streamList.get(0), groupName, l.get(0).getID());
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
                                         log.info("Merged movie '{}' in graph ", movie.get("title")  );
                                     } else  if ( data.get("source.operation").equalsIgnoreCase("DELETE") ) {
                                         graph.query(graphname,
                                                 "MATCH (m:movie{movie_id:$movie_id}) DELETE m",
                                                 movie);
-                                        jedis.xack(streamList.get(0), groupName, l.get(0).getID());
-                                        log.info( "DELETING {}",  movie.toString()  );                                    }
-
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
+                                        log.info( "DELETING {}",  movie.toString()  );
+                                    } else  if ( data.get("source.operation").equalsIgnoreCase("UPDATE") ) {
+                                        graph.query(graphname,
+                                                "MATCH (m:movie{movie_id:$movie_id}) SET m.title = $title, m.genre = $genre, m.year = $year,m.votes = $votes,m.rating = $rating ",
+                                                movie);
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
+                                        log.info( "Updated {}",  movie.toString()  );
+                                    }
 
                                 } if ( data.get("source.table").equalsIgnoreCase("actors") ) { // create/update actor
                                     Map<String,Object> actor = new HashMap<>();
@@ -197,14 +201,20 @@ public class RedisStreamToGraphService {
 
                                         createRelationFromMySQL( "actor", Integer.parseInt(data.get("actor_id")));
 
-                                        jedis.xack(streamList.get(0), groupName, l.get(0).getID());
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
                                         log.info("Merged actor '{} {}' in graph - ", actor.get("first_name"), actor.get("last_name"));
                                     } else  if ( data.get("source.operation").equalsIgnoreCase("DELETE") ) {
                                         graph.query(graphname,
                                                 "MATCH (a:actor{actor_id:$actor_id}) DELETE a",
                                                 actor);
-                                        jedis.xack(streamList.get(0), groupName, l.get(0).getID());
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
                                         log.info( "DELETING {}",  actor.toString()  );
+                                    } else  if ( data.get("source.operation").equalsIgnoreCase("UPDATE") ) {
+                                        graph.query(graphname,
+                                                "MATCH (a:actor{actor_id:$actor_id}) SET a.first_name=$first_name, a.last_name=$last_name, a.dob = $dob  ",
+                                                actor);
+                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
+                                        log.info( "Updated {}",  actor.toString()  );
                                     }
 
                                 }

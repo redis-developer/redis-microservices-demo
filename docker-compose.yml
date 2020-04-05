@@ -2,7 +2,7 @@ version: '3.7'
 services:
 
   redis-service:
-    image: redislabs/redisgraph
+    image: redislabs/redismod
     ports:
       - "6379:6379"
     networks:
