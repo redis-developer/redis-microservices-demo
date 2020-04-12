@@ -210,7 +210,7 @@ public class RediStreamsToAutocomplete {
                                                 oldValue =  movie.get("title").toString();
                                             }
 
-                                            this.updateSearch(suggestionKey,newValue, oldValue, id, false);
+                                            this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
                                             jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
 
 
@@ -252,7 +252,7 @@ public class RediStreamsToAutocomplete {
                                                 oldValue =  actor.get("full_name").toString();
                                             }
 
-                                            this.updateSearch(suggestionKey,newValue, oldValue, id, false);
+                                            this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
                                             jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
 
                                         }
@@ -281,12 +281,11 @@ public class RediStreamsToAutocomplete {
     }
 
     /**
-     * Update Redis either a full text document or simply suggestion
+     * Update Redis suggestion
      * @param newValue the string to index, null when delete
      * @param oldValue the string to remove or remove
-     * @param fulltext
      */
-    private void updateSearch(String index, String newValue, String oldValue, String id,  boolean fulltext ) {
+    private void updateAutocomplete(String index, String newValue, String oldValue, String id) {
         Client search = searchClients.get(index);
 
         if ( newValue != null && oldValue == null  ) { // creation
