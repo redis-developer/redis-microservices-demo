@@ -52,14 +52,17 @@ public class MoviesAPIController {
 
     @PostMapping("/")
     public Map<String,Object> save(@RequestBody Map<String,Object> record) {
+        log.info(record.toString());
         Map<String,Object> actor = new HashMap<>();
         int rows = jdbcTemplate.update(
-                "UPDATE movies SET title = ?, genre = ?, votes = ?, rating = ?, release_year = ? WHERE movie_id = ?",
+                "UPDATE movies SET title = ?, genre = ?, votes = ?, rating = ?, release_year = ? , plot = ? WHERE movie_id = ?",
                 record.get("title"),
                 record.get("genre"),
                 record.get("votes"),
                 record.get("rating"),
-                record.get("release_year")
+                record.get("release_year"),
+                record.get("plot"),
+                record.get("movie_id")
                 );
 
         log.info("Movie Updated {} - {} row", record, rows);

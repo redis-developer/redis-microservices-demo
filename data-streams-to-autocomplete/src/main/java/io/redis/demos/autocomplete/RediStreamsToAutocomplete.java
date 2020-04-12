@@ -343,7 +343,7 @@ public class RediStreamsToAutocomplete {
     public List<Map<String,Object>> suggest(String indexName, String term){
         List<Map<String,Object>> result = new ArrayList<>();
         String complexIndexName = "search:" + indexName; // TODO: hard coded values....
-        log.info("Suggestion qyery on {} with {}", complexIndexName, term);
+        log.info("Suggestion query on {} with {}", complexIndexName, term);
         Client search = searchClients.get(complexIndexName);
 
         if (search != null) {

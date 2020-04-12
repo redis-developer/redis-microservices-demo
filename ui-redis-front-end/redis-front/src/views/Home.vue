@@ -13,6 +13,9 @@ export default {
   name: 'Home',
   components: {
     HelloWorld
-  }
+  },
+    created() {
+    this.$parent.contextualHelp = null;
+  },
 }
 </script>

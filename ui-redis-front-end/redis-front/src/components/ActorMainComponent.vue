@@ -35,7 +35,7 @@ export default {
     };
   },
   created () {
-    this.fetch()
+    this.fetch();
   },
   methods: {
     async fetch () {

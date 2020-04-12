@@ -14,7 +14,9 @@
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.11.0",
     "core-js": "^3.6.4",
+    "underscore": "^1.10.2",
     "vue": "^2.6.11",
+    "vue-bootstrap-typeahead": "^0.2.6",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.1",
     "vue-router": "^3.1.6"

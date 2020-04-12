@@ -11,6 +11,9 @@ export default {
   name: "App",
   components: {
     ServicesParent
+  },
+  created() {
+        this.$parent.contextualHelp = "Use this page to start/stop the Streaming services, that read or write to Redis Streams";
   }
 };
 </script>

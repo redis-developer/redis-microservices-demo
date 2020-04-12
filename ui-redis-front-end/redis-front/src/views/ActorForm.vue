@@ -70,7 +70,10 @@ export default {
    };
   },
   created () {
-    this.fetch()
+    this.fetch();
+    this.$parent.contextualHelp = "Legacy Application calling a REST API providing SQL data, "+
+        "When an actor is updated, and the Streams service is running the database event will be pushed to Redis Streams, and then can be consumed by any type of application.<br/> "+
+        "See  <b><a target='_blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/sql-data-generator/src/main/java/io/redis/demos/debezium/sql/controllers/ActorsAPIController.java'>ActorsAPIController</a></b>";
   },
   methods: {
     async fetch () {

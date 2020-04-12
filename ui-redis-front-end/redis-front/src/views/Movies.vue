@@ -14,6 +14,9 @@ export default {
   name: "MovieList",
   components: {
     MainComponent
+  },
+  created() {
+        this.$parent.contextualHelp = "This list is 100% based on MySQL using simple REST API Call. You can view this as the <i>legacy application</i>.";
   }
 };
 </script>

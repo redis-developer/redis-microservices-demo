@@ -45,6 +45,19 @@ Vue.use(VueRouter)
     name: 'MovieForm',
     component: () => import('../views/MovieForm.vue')
   },
+
+  {
+    path: '/autocomplete/',
+    name: 'Autocomplete',
+    component: () => import('../views/Autocomplete.vue')
+  },
+
+  {
+    path: '/aggregations/',
+    name: 'Aggregations',
+    component: () => import('../views/Aggregations.vue')
+  },
+
   ]
 
 const router = new VueRouter({
