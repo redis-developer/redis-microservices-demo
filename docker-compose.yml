@@ -6,7 +6,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     restart: always
 
   mysql-debezium-service:
@@ -20,65 +20,72 @@ services:
       - MYSQL_USER=mysqluser
       - MYSQL_PASSWORD=mysqlpw
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     restart: always
 
-  cdc-redis-streams-sync-service:
+  cdc-to-redis-streams-service:
     build:
       context: ./data-streams-publisher
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     restart: always
     depends_on:
       - mysql-debezium-service
       - redis-service
 
-# mysql -umysqluser -pmysqlpw inventory
-# mysql -uroot -pdebezium
-# mysql -udebezium -pdbz
-
-
-  graph-sync-service:
+  streams-to-graph-service:
     build:
       context: ./data-streams-to-graph
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     restart: always
     depends_on:
       - mysql-debezium-service
       - redis-service
 
-  data-generator-service:
+  sql-legacy-service:
     build:
       context: ./sql-data-generator
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     depends_on:
       - mysql-debezium-service
     restart: always
 
-  cache-invalidation-service:
+  cdc-to-cache-service:
     build:
       context: ./cache-invalidator-service
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
     networks:
-      - cdc-demos-network
+      - redis-microservices-network
     depends_on:
       - mysql-debezium-service
       - redis-service
     restart: always
 
+  streams-to-autocomplete-service:
+    build:
+      context: ./data-streams-to-autocomplete
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - redis-microservices-network
+    depends_on:
+      - redis-service
+    restart: always
+
 networks:
-  cdc-demos-network:
+  redis-microservices-network:
     driver: bridge

@@ -53,10 +53,12 @@ import static java.util.stream.Collectors.toMap;
 public class CDCEventListener {
 
     private String topicName;
+    private String status="STOPPED";
 
 
     // Thread for the Debezium engine
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    DebeziumEngine<SourceRecord> engine = null;
 
 
     // Service layer to interact with Redis
@@ -64,7 +66,6 @@ public class CDCEventListener {
     private final Properties configAsProperties;
 
     public CDCEventListener(Configuration config, RedisCacheService service) throws IOException {
-
         topicName = config.getString("database.server.name") +"."+ config.getString("database.name")  +".";
         redisCacheService = service;
         configAsProperties = config.asProperties();
@@ -72,25 +73,42 @@ public class CDCEventListener {
 
 
     public void startDebezium() throws IOException {
-        try (DebeziumEngine<SourceRecord> engine = DebeziumEngine.create(Connect.class)
+        log.info("Starting Debezium....");
+        try (DebeziumEngine<SourceRecord> start = DebeziumEngine.create(Connect.class)
                 .using(configAsProperties)
                 .notifying(record -> {
                     handleEvent(record);
-                }).build()
-        ) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
+                }).build())
+        {
+            engine = start;
+            executor = Executors.newSingleThreadExecutor();
             executor.execute(engine);
+            status = "RUNNING";
         }
     }
 
+    public void stopDebezium(){
+        log.info("Stopping Debezium....");
+        try {
+            engine.close();
+            executor.shutdown();
+            executor = null;
+        } catch (Exception e) {
+            log.error( e.getMessage() );
+        } finally {
+            status = "STOPPED";
+        }
+    }
+
+    public String getState() {
+        return this.status;
+    }
 
     /**
      * Capture CDC Event if event is from the proper DB/Table send it to @RedisCacheService
      * @param record
      */
     private void handleEvent(SourceRecord record) {
-
-        log.error("event received...");
 
         // check of the events is sent to the proper topic that is the server-name and database
         if (record != null && record.topic() != null && topicName != null && record.topic().startsWith( topicName )) {

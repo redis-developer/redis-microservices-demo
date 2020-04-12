@@ -1,6 +1,12 @@
-# Debezium CDC & Redis
+# Microservices with Redis
 
-This project shows how to use Debezium together, for various use cases:
+This project shows how you can modernize a legacy application that use RDBMS with Redis.
+
+* Caching: take some data out of RDBMS
+* Use RediSearch to index relational data and provides autocomplete feature
+* Use Redis Graph to provide a new way to navigate and use the data
+* Build an event based architecture using Redis Streams
+
 
 ### 1- [Cache Invalidation](cache-invalidator-service)
 

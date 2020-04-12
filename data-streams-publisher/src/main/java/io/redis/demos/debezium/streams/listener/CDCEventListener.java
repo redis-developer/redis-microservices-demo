@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -31,9 +30,11 @@ import static java.util.stream.Collectors.toMap;
 public class CDCEventListener {
 
     private String topicName;
+    private String status="STOPPED";
 
     // Thread for the Debezium engine
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private  ExecutorService executor = Executors.newSingleThreadExecutor();
+    DebeziumEngine<SourceRecord> engine = null;
 
     // Service layer to interact with Redis
     private final RedisStreamsDebeziumProducer redisStreamsService;
@@ -47,16 +48,36 @@ public class CDCEventListener {
 
 
     public void startDebezium() throws IOException {
-        try (DebeziumEngine<SourceRecord> engine = DebeziumEngine.create(Connect.class).using(configAsProperties)
+        log.info("Starting Debezium....");
+        try (DebeziumEngine<SourceRecord> start = DebeziumEngine.create(Connect.class).using(configAsProperties)
                 .notifying(record -> {
                     handleEvent(record);
-                }).build()) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
+                }).build())
+        {
+            engine = start;
+            executor = Executors.newSingleThreadExecutor();
             executor.execute(engine);
+            status = "RUNNING";
         }
 
     }
 
+    public void stopDebezium(){
+        log.info("Stopping Debezium....");
+        try {
+            engine.close();
+            executor.shutdown();
+            executor = null;
+        } catch (Exception e) {
+           log.error( e.getMessage() );
+        } finally {
+            status = "STOPPED";
+        }
+    }
+
+    public String getState() {
+        return this.status;
+    }
 
     /**
      * Capture CDC Event if event is from the proper DB/Table send it to @RedisCacheService
@@ -80,6 +101,7 @@ public class CDCEventListener {
                     structureType = BEFORE;
                 }
 
+
                 // prepare header
                 Struct sourcePayload = (Struct) payload.get(SOURCE);
                 Map<String, Object> cdcHeader = new HashMap<>();
@@ -90,20 +112,38 @@ public class CDCEventListener {
                 List<String> fieldNames = record.keySchema().fields().stream().map(field -> field.name()).collect(Collectors.toList());
                 cdcHeader.put("source.key.fields", fieldNames);
 
-                Struct messagePayload = (Struct) payload.get(structureType);
-                Map<String, Object> cdcPayload = messagePayload.schema().fields().stream().map(Field::name)
-                        .filter(fieldName -> messagePayload.get(fieldName) != null)
-                        .map(fieldName -> Pair.of(fieldName, messagePayload.get(fieldName)))
-                        .collect(toMap(Pair::getKey, Pair::getValue));
+                Map<String, Object> cdcPayload = getCDCEventAsMap( structureType, payload );
 
                 // send a CDC event with header (db, table names and key fields) and body (values)
                 Map<String, Object> cdcEvent = new HashMap<>();
                 cdcEvent.put("header", cdcHeader);
                 cdcEvent.put("body", cdcPayload);
+
+                // when UPDATE we should add another structure to allow consumer to understand the value before change
+                if (op == Envelope.Operation.UPDATE) {
+                    Map<String, Object> cdcPayloadBefore = getCDCEventAsMap( BEFORE , payload );
+                    cdcEvent.put("before", cdcPayloadBefore);
+                }
                 this.redisStreamsService.publishEventToStreams(cdcEvent);
             }
         }
     }
+
+    /**
+     * Helper method that transform the Debezium Structure into a simple Map
+     * @param operation
+     * @param payload
+     * @return
+     */
+    private Map<String,Object> getCDCEventAsMap(String operation, Struct payload) {
+        Struct messagePayload = (Struct) payload.get(operation);
+        Map<String, Object> cdcPayload = messagePayload.schema().fields().stream().map(Field::name)
+                .filter(fieldName -> messagePayload.get(fieldName) != null)
+                .map(fieldName -> Pair.of(fieldName, messagePayload.get(fieldName)))
+                .collect(toMap(Pair::getKey, Pair::getValue));
+        return cdcPayload;
+    }
+
 }
 
 

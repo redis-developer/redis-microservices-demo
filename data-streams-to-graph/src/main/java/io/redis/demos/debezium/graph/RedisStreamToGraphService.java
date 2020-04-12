@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -42,11 +43,13 @@ public class RedisStreamToGraphService {
     @Value("${redis.graphname}")
     private String graphname;
 
+    Future<?> streamProcessingTask;
+    private String status = "STOPPED";
     private JedisPool jedisPool;
     RedisGraph graph;
 
-    @Autowired JdbcTemplate
-            jdbcTemplate;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public RedisStreamToGraphService() {
         log.info(" === RedisStreamToGraphService Started : Waiting for user action  ===");
@@ -63,18 +66,33 @@ public class RedisStreamToGraphService {
             log.error("Error creating JedisPool {}", use.getMessage());
         }
         log.info("Will look at {} streams", streamList);
-
     }
 
     public Map<String,String> processStream() {
-
         Map<String, String> result =  new HashMap<>();
-
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(this::processStreamInThread);
-        result.put("msg", "Stream Reeading started");
+        streamProcessingTask = executor.submit(this::processStreamInThread);
+        result.put("msg", "Stream Reading started");
+        status = "RUNNING";
         return result;
+    }
 
+    /**
+     * Stop the stream reader
+     * @return
+     */
+    public Map<String,String> stopProcessStream(){
+        log.info("Stopping Stream Processing");
+        Map<String, String> result =  new HashMap<>();
+        if (streamProcessingTask != null) {
+            streamProcessingTask.cancel(true);
+            result.put("msg", "Stream Reading Stopped");
+        }
+        return result;
+    }
+
+    public String getState() {
+        return this.status;
     }
 
 
@@ -98,6 +116,8 @@ public class RedisStreamToGraphService {
                 final int[] streamCtr = { 0 };
                 streamList.forEach( stream -> {
 
+                    StreamEntryID streamEtnryId = new StreamEntryID("0-0");
+
 
                     Map.Entry<String, StreamEntryID> queryStream =
                             new AbstractMap.SimpleImmutableEntry<>( stream, StreamEntryID.UNRECEIVED_ENTRY);
@@ -106,7 +126,6 @@ public class RedisStreamToGraphService {
 
                     try {
                         // Create consumer if does not exist already
-                        StreamEntryID streamEtnryId = new StreamEntryID("0-0");
                         finalJedis.xgroupCreate(
                                 stream,
                                 groupName,
@@ -128,6 +147,7 @@ public class RedisStreamToGraphService {
                 try {
 
                 while(loop) {
+                    loop = !streamProcessingTask.isCancelled();
 
 
                     // consume messages
@@ -136,117 +156,109 @@ public class RedisStreamToGraphService {
                             consumer,
                             1,
                             0,
-                            true,
+                            false,
                             xReadQueries
                     );
 
 
                     if (events != null) {
                         for (Map.Entry m : events) {
-                            System.out.println(m.getKey() + " : " + m.getValue().getClass());
-                            if (m.getValue() instanceof ArrayList) {
+                            if (m.getValue() instanceof ArrayList ) {
                                 List<StreamEntry> l = (List) m.getValue();
-                                Map<String, String> data = l.get(0).getFields();
-                                for (Map.Entry entry : data.entrySet()) {
-                                    System.out.println(entry.getKey() + " : " + entry.getValue());
+                                if (l.size() != 0) {
+                                    Map<String, String> data = l.get(0).getFields();
+
+                                    // create/update movie
+                                    if (data.get("source.table").equalsIgnoreCase("movies")) {
+                                        // save data into jedis graph
+                                        Map<String, Object> movie = new HashMap<>();
+                                        movie.put("title", data.get("title"));
+                                        movie.put("genre", data.get("genre"));
+                                        movie.put("votes", Integer.parseInt(data.get("votes")));
+                                        movie.put("rating", Float.parseFloat(data.get("rating")));
+                                        movie.put("year", Integer.parseInt(data.get("release_year")));
+                                        movie.put("movie_id", Integer.parseInt(data.get("movie_id")));
+
+                                        // TODO : manage update failures and ack
+                                        if (data.get("source.operation").equalsIgnoreCase("CREATE")) {
+                                            graph.query(graphname,
+                                                    "MERGE (:movie{title:$title,genre:$genre,year:$year,votes:$votes,rating:$rating, movie_id:$movie_id})",
+                                                    movie);
+                                            createRelationFromMySQL("movie", Integer.parseInt(data.get("movie_id")));
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("Merged movie '{}' in graph ", movie.get("title"));
+                                        } else if (data.get("source.operation").equalsIgnoreCase("DELETE")) {
+                                            graph.query(graphname, "MATCH (m:movie{movie_id:$movie_id}) DELETE m", movie);
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("DELETING {}", movie.toString());
+                                        } else if (data.get("source.operation").equalsIgnoreCase("UPDATE")) {
+                                            graph.query(graphname,
+                                                    "MATCH (m:movie{movie_id:$movie_id}) SET m.title = $title, m.genre = $genre, m.year = $year,m.votes = $votes,m.rating = $rating ",
+                                                    movie);
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("Updated {}", movie.toString());
+                                        }
+
+                                    }
+                                    if (data.get("source.table").equalsIgnoreCase("actors")) { // create/update actor
+                                        Map<String, Object> actor = new HashMap<>();
+                                        actor.put("first_name", data.get("first_name"));
+                                        String lastName = data.get("last_name");
+                                        if (lastName == null || lastName.trim().isEmpty()) {
+                                            lastName = "-";
+                                        }
+                                        actor.put("last_name", lastName);
+                                        actor.put("dob", Integer.parseInt(data.get("dob")));
+                                        actor.put("actor_id", Integer.parseInt(data.get("actor_id")));
+
+                                        if (data.get("source.operation").equalsIgnoreCase("CREATE")) {
+                                            graph.query(graphname,
+                                                    "MERGE (:actor{first_name:$first_name, last_name:$last_name, dob:$dob , actor_id:$actor_id})",
+                                                    actor);
+
+                                            createRelationFromMySQL("actor", Integer.parseInt(data.get("actor_id")));
+
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("Merged actor '{} {}' in graph - ", actor.get("first_name"), actor.get("last_name"));
+                                        } else if (data.get("source.operation").equalsIgnoreCase("DELETE")) {
+                                            graph.query(graphname, "MATCH (a:actor{actor_id:$actor_id}) DELETE a", actor);
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("DELETING {}", actor.toString());
+                                        } else if (data.get("source.operation").equalsIgnoreCase("UPDATE")) {
+                                            graph.query(graphname,
+                                                    "MATCH (a:actor{actor_id:$actor_id}) SET a.first_name=$first_name, a.last_name=$last_name, a.dob = $dob  ",
+                                                    actor);
+                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
+                                            log.info("Updated {}", actor.toString());
+                                        }
+
+                                    }
                                 }
-
-                                // create/update movie
-                                if ( data.get("source.table").equalsIgnoreCase("movies") ) {
-                                    // save data into jedis graph
-                                    Map<String,Object> movie = new HashMap<>();
-                                    movie.put("title", data.get("title"));
-                                    movie.put("genre", data.get("genre"));
-                                    movie.put("votes", Integer.parseInt(data.get("votes")));
-                                    movie.put("rating", Float.parseFloat(data.get("rating")));
-                                    movie.put("year", Integer.parseInt(data.get("release_year")));
-                                    movie.put("movie_id", Integer.parseInt(data.get("movie_id")));
-
-                                    // TODO : manage update failures and ack
-                                    if ( data.get("source.operation").equalsIgnoreCase("CREATE") ) {
-                                        graph.query(graphname, "MERGE (:movie{title:$title,genre:$genre,year:$year,votes:$votes,rating:$rating, movie_id:$movie_id})", movie);
-                                        createRelationFromMySQL( "movie", Integer.parseInt(data.get("movie_id")));
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info("Merged movie '{}' in graph ", movie.get("title")  );
-                                    } else  if ( data.get("source.operation").equalsIgnoreCase("DELETE") ) {
-                                        graph.query(graphname,
-                                                "MATCH (m:movie{movie_id:$movie_id}) DELETE m",
-                                                movie);
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info( "DELETING {}",  movie.toString()  );
-                                    } else  if ( data.get("source.operation").equalsIgnoreCase("UPDATE") ) {
-                                        graph.query(graphname,
-                                                "MATCH (m:movie{movie_id:$movie_id}) SET m.title = $title, m.genre = $genre, m.year = $year,m.votes = $votes,m.rating = $rating ",
-                                                movie);
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info( "Updated {}",  movie.toString()  );
-                                    }
-
-                                } if ( data.get("source.table").equalsIgnoreCase("actors") ) { // create/update actor
-                                    Map<String,Object> actor = new HashMap<>();
-                                    actor.put("first_name", data.get("first_name"));
-                                    String lastName = data.get("last_name");
-                                    if (lastName == null || lastName.trim().isEmpty() ) {
-                                        lastName = "-";
-                                    }
-                                    actor.put("last_name", lastName  );
-                                    actor.put("dob", Integer.parseInt(data.get("dob")));
-                                    actor.put("actor_id", Integer.parseInt(data.get("actor_id")));
-
-                                    // TODO : manage update
-                                    if ( data.get("source.operation").equalsIgnoreCase("CREATE") ) {
-                                        graph.query(graphname,
-                                                "MERGE (:actor{first_name:$first_name, last_name:$last_name, dob:$dob , actor_id:$actor_id})",
-                                                actor);
-
-                                        createRelationFromMySQL( "actor", Integer.parseInt(data.get("actor_id")));
-
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info("Merged actor '{} {}' in graph - ", actor.get("first_name"), actor.get("last_name"));
-                                    } else  if ( data.get("source.operation").equalsIgnoreCase("DELETE") ) {
-                                        graph.query(graphname,
-                                                "MATCH (a:actor{actor_id:$actor_id}) DELETE a",
-                                                actor);
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info( "DELETING {}",  actor.toString()  );
-                                    } else  if ( data.get("source.operation").equalsIgnoreCase("UPDATE") ) {
-                                        graph.query(graphname,
-                                                "MATCH (a:actor{actor_id:$actor_id}) SET a.first_name=$first_name, a.last_name=$last_name, a.dob = $dob  ",
-                                                actor);
-                                        jedis.xack( m.getKey().toString() , groupName, l.get(0).getID());
-                                        log.info( "Updated {}",  actor.toString()  );
-                                    }
-
-                                }
-
                             }
                         }
                     } else {
-                        log.info("no event in stream - ");
+                        log.debug("no event in stream - ");
                         try {
                             TimeUnit.MILLISECONDS.sleep(500);
                         } catch (InterruptedException e1) {
-                            e1.printStackTrace();
                         }
                     }
-
                 }
                 } catch (JedisDataException jde) {
                     log.warn( jde.getMessage() );
                 }
 
-
-
             } finally {
                 if (jedis != null) {
                     jedis.close();
                 }
-
                 log.info("Leaving the stream processing method");
+                status = "STOPPED";
             }
         }
 
     }
+
 
     /**
      * Using a different approach for the relation,

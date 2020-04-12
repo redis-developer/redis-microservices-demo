@@ -1,51 +1,46 @@
-package io.redis.demos.debezium.sql;
+package io.redis.demos.debezium.sql.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@RestController
-public class RestStatusController {
+@Service
+public class DataGeneratorService {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private String status="STOPPED";
+    ScheduledExecutorService executorService = null;
 
-    @GetMapping("/status")
-    public Map<String,String> status() {
-
-        Map<String,String> result = new HashMap<>();
-
-        result.put("service", "DataOperationGeneratorApplication");
-        result.put("status", "UP");
-        result.put("version", "1.0");
-
-        return result;
+    public DataGeneratorService() {
     }
 
-    @GetMapping("/start")
-    public Map<String,String> start() {
-
-        Map<String,String> result = new HashMap<>();
-
-        result.put("service", "DataOperationGeneratorApplication");
-        result.put("operation", "start");
-
+    public void start(){
+        log.info("Starting data generator....");
+        executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(this::callBusinessLogic, 5, 10, TimeUnit.SECONDS );
-
-
-        return result;
+        status="RUNNING";
     }
+
+    public void stop(){
+        log.info("Stopping data generator....");
+        executorService.shutdownNow();
+        executorService = null;
+        status="STOPPED";
+    }
+
+    public String getState() {
+        return this.status;
+    }
+
 
     private void callBusinessLogic() {
         log.info("=== CALL BUSINESS LOGIC ===");
@@ -78,7 +73,6 @@ public class RestStatusController {
                 19 , TimeUnit.SECONDS);
     }
 
-
     private void createNewCustomer( int id, String firstName, String lastName, String email ) {
         log.info(" == Delete/Create Customers ==");
 
@@ -89,8 +83,6 @@ public class RestStatusController {
 
 
     }
-
-
 
     private void addNewOrder( int purchaser, int quantity, int product_id, String orderDate ) {
         log.info(" == Create Order ==");

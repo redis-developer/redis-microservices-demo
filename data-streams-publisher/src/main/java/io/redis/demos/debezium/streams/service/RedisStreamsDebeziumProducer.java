@@ -82,14 +82,23 @@ public class RedisStreamsDebeziumProducer {
         message.putAll(headerAsString);
         message.putAll(bodyAsString);
 
+        // if update create addition information with "before" changes fields
+        if ( cdcEvent.containsKey("before") ) {
+            Map<String,Object> bodyBefore = (Map<String, Object>) cdcEvent.get("before");
+
+            Map<String,String> beforeAsString = bodyBefore.entrySet().stream()
+                    .filter(m -> m.getKey() != null && m.getValue() !=null)
+                    .collect(Collectors.toMap(
+                            e ->  { return "before:"+ e.getKey(); } ,
+                            e -> e.getValue().toString())
+                    );
+            message.putAll(beforeAsString);
+        }
 
         // Connect to Jedis and invalidate the key
         try (Jedis jedis = jedisPool.getResource()) {
             String key = "events:"+ db +":"+ table ;
-
-            System.out.println(message);
             jedis.xadd( key, StreamEntryID.NEW_ENTRY, message );
-
         }
     }
 

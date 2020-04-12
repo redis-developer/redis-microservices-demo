@@ -1,22 +1,21 @@
 package io.redis.demos.debezium.graph;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
+@CrossOrigin(origins = "*")
+@RequestMapping("/api/1.0/data-streams-to-graph/")
 @RestController
 public class RestStatusController {
 
     @Inject
     RedisStreamToGraphService redisService;
-
-
 
     @GetMapping("/status")
     public Map<String,String> status() {
@@ -24,20 +23,28 @@ public class RestStatusController {
         Map<String,String> result = new HashMap<>();
 
         result.put("service", "SyncGraphApplication");
-        result.put("status", "UP");
+        result.put("status", redisService.getState());
         result.put("version", "1.0");
 
         return result;
     }
-
 
     @GetMapping("/start")
     public Map<String,String> start() {
         Map<String,String> result = new HashMap<>();
         result.put("service", "SyncGraphApplication");
         result.put("action", "start");
-        result.put("status", "OK");
         Map<String,String> call = redisService.processStream();
+        result.putAll(call);
+        return result;
+    }
+
+    @GetMapping("/stop")
+    public Map<String,String> stop() {
+        Map<String,String> result = new HashMap<>();
+        result.put("service", "SyncGraphApplication");
+        result.put("action", "stop");
+        Map<String,String> call = redisService.stopProcessStream();
         result.putAll(call);
         return result;
     }
@@ -47,7 +54,6 @@ public class RestStatusController {
         Map<String,String> result = new HashMap<>();
         result.put("service", "SyncGraphApplication");
         result.put("action", "Refresh Relationships");
-        result.put("status", "OK");
         redisService.createRelationFromMySQL(type, id);
         return result;
     }

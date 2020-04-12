@@ -56,7 +56,7 @@ public class ConnectorConfig {
         props.setProperty("database.server.id", databaseServerId);
         props.setProperty("database.server.name", databaseServerName);
         props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory");
-        props.setProperty("database.history.file.filename", "./dbhistory.dat");
+        props.setProperty("database.history.file.filename", "./dbhistory-cdc-sync.dat");
         props.setProperty("table.whitelist", tableWhitelist);
 
         props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
