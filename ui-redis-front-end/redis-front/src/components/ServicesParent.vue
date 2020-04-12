@@ -35,7 +35,6 @@
         </template>
       </b-card>
 
-
       <b-card
         title="Auto-Complete"
         img-src="/imgs/autocomplete-service.png"
@@ -48,15 +47,37 @@
           <div>
           This service reads events from <b>Redis Streams</b> using various Consumer Groups, and update <b>RediSearch</b> index/suggestions. 
           Configuration in <i>application.properties</i> file
-          </div>      
-          
-          
+          </div>                
         </b-card-text>
+
+        <div class="text-justify">
+          <hr/>
+          <b-form-group label="Redis Search Services">
+            <b-form-checkbox-group
+              id="autoCompleteOptionSelector"
+              v-model="autoCompleteSelected"
+              :options="autoCompleteOptions"
+              switches
+              stacked
+            ></b-form-checkbox-group>
+
+            <b-form-checkbox-group
+              id="ftsOptionSelector"
+              v-model="ftsSelected"
+              :options="ftsOptions"
+              switches
+              stacked
+            ></b-form-checkbox-group>
+
+          </b-form-group>
+        </div>
+
 
         <b-button @click="streamsToAutocompleteChangeStatus"  >
           {{(streamAutoCompleteServiceStatus.call.status == "RUNNING")?"Stop It!":"Start It!"  }}
         </b-button>
-      
+
+
         <template v-slot:footer>
           <b-alert :variant="streamAutoCompleteServiceStatus.messageColor" show>
             Status : {{streamAutoCompleteServiceStatus.call.status}} 
@@ -162,14 +183,19 @@ export default {
   data() {
     return {
       streamProducerServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
-      streamAutoCompleteServiceStatus: {info:null,call:null,messageColor:""},
-      streamsToGraphServiceStatus: {info:null,call:null,messageColor:""},
-      cacheServiceStatus: {info:null,call:null,messageColor:""},
-      rdbmsServiceStatus: {info:null,call:null,messageColor:""},
+      streamAutoCompleteServiceStatus: {info:null,call:{status : "ERROR", "fulltext": "false", "suggest": "false" },messageColor:""},
+      streamsToGraphServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
+      cacheServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
+      rdbmsServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
+      ftsSelected: [],
+      ftsOptions:  [{ text: 'Full Text', value: 'fulltext' }],
+      autoCompleteSelected: [],
+      autoCompleteOptions:  [{ text: 'Autocomplete', value: 'autocomplete' }]
+      
+    
     };
   },
   created () {
-    this.fetch();
     setInterval(function (){
       this.fetch();
     }.bind(this), 1500);
@@ -177,87 +203,103 @@ export default {
   },
   methods: {
     async fetch () {
-      // TODO : cleanup
-      //this.isLoading = true;
 
 
-      let { data } = await RDBMSRepository.status()
-      if (data != undefined) {
-        this.rdbmsServiceStatus.call = data;
-      } else  {
-        this.rdbmsServiceStatus.call = { status : "ERROR" };
+      try {
+
+        let { data } = await RDBMSRepository.status()
+        if (data != undefined) {
+          this.rdbmsServiceStatus.call = data;
+        } else  {
+          this.rdbmsServiceStatus.call = { status : "ERROR" };
+        }
+        this.rdbmsServiceStatus.info = RDBMSRepository.getServiceInfo();
+        if (this.rdbmsServiceStatus.call.status == "RUNNING") {
+        this.rdbmsServiceStatus.messageColor = "success";
+        } else if (this.rdbmsServiceStatus.call.status == "ERROR") {
+        this.rdbmsServiceStatus.messageColor = "danger";
+        }  else {
+        this.rdbmsServiceStatus.messageColor = "warning";
+        } 
+        
+
+        data = await CacheInvalidatorRepository.status()
+        if (data.data != undefined) {
+          this.cacheServiceStatus.call = data.data;
+        } else  {
+          this.cacheServiceStatus.call = { status : "ERROR" };
+        }
+        this.cacheServiceStatus.info = CacheInvalidatorRepository.getServiceInfo();
+        if (this.cacheServiceStatus.call.status == "RUNNING") {
+        this.cacheServiceStatus.messageColor = "success";
+        } else if (this.cacheServiceStatus.call.status == "ERROR") {
+        this.cacheServiceStatus.messageColor = "danger";
+        }  else {
+        this.cacheServiceStatus.messageColor = "warning";
+        }  
+
+        data = await DataStreamsProducerRepository.status();
+        if (data.data != undefined) {
+          this.streamProducerServiceStatus.call = data.data;
+        } else  {
+          this.streamProducerServiceStatus.call = { status : "ERROR" };
+        }
+        this.streamProducerServiceStatus.info = DataStreamsProducerRepository.getServiceInfo();
+        if (this.streamProducerServiceStatus.call.status == "RUNNING") {
+        this.streamProducerServiceStatus.messageColor = "success";
+        } else if (this.streamProducerServiceStatus.call.status == "ERROR") {
+        this.streamProducerServiceStatus.messageColor = "danger";
+        }  else {
+        this.streamProducerServiceStatus.messageColor = "warning";
+        }
+
+
+        data = await DataStreamsAutoCompleteRepository.status()
+        if (data.data != undefined) {
+          this.streamAutoCompleteServiceStatus.call = data.data;
+        } else  {
+          this.streamAutoCompleteServiceStatus.call = {status : "ERROR", "fulltext": "false", "suggest": "false" };
+        }
+        this.streamAutoCompleteServiceStatus.info = DataStreamsAutoCompleteRepository.getServiceInfo();
+        if (this.streamAutoCompleteServiceStatus.call.status == "RUNNING") {
+        this.streamAutoCompleteServiceStatus.messageColor = "success";
+        } else if (this.streamAutoCompleteServiceStatus.call.status == "ERROR") {
+        this.streamAutoCompleteServiceStatus.messageColor = "danger";
+        }  else {
+        this.streamAutoCompleteServiceStatus.messageColor = "warning";
+        }
+
+        // print the status of the Search features (autocomplete/fts)
+        if (this.streamAutoCompleteServiceStatus.call.suggest == "true") {
+          this.autoCompleteSelected = ["autocomplete"];
+        } else {
+          this.autoCompleteSelected = [];
+        }
+        if (this.streamAutoCompleteServiceStatus.call.fulltext == "true") {
+          this.ftsSelected = ["fulltext"];
+        } else {
+          this.ftsSelected = [];
+        }
+
+
+        data = await DataStreamsToGraphRepository.status()
+        if (data.data != undefined) {
+          this.streamsToGraphServiceStatus.call = data.data;
+        } else  {
+          this.streamsToGraphServiceStatus.call = { status : "ERROR" };
+        }
+        this.streamsToGraphServiceStatus.info = DataStreamsToGraphRepository.getServiceInfo();
+        if (this.streamsToGraphServiceStatus.call.status == "RUNNING") {
+        this.streamsToGraphServiceStatus.messageColor = "success";
+        } else if (this.streamsToGraphServiceStatus.call.status == "ERROR") {
+        this.streamsToGraphServiceStatus.messageColor = "danger";
+        }  else {
+        this.streamsToGraphServiceStatus.messageColor = "warning";
+        } 
+
+      } catch (err ) {
+        console.log(err);
       }
-      this.rdbmsServiceStatus.info = RDBMSRepository.getServiceInfo();
-      if (this.rdbmsServiceStatus.call.status == "RUNNING") {
-       this.rdbmsServiceStatus.messageColor = "success";
-      } else if (this.rdbmsServiceStatus.call.status == "ERROR") {
-       this.rdbmsServiceStatus.messageColor = "danger";
-      }  else {
-       this.rdbmsServiceStatus.messageColor = "warning";
-      } 
-      
-
-      data = await CacheInvalidatorRepository.status()
-      if (data.data != undefined) {
-        this.cacheServiceStatus.call = data.data;
-      } else  {
-        this.cacheServiceStatus.call = { status : "ERROR" };
-      }
-      this.cacheServiceStatus.info = CacheInvalidatorRepository.getServiceInfo();
-      if (this.cacheServiceStatus.call.status == "RUNNING") {
-       this.cacheServiceStatus.messageColor = "success";
-      } else if (this.cacheServiceStatus.call.status == "ERROR") {
-       this.cacheServiceStatus.messageColor = "danger";
-      }  else {
-       this.cacheServiceStatus.messageColor = "warning";
-      }  
-
-      data = await DataStreamsProducerRepository.status();
-      if (data.data != undefined) {
-         this.streamProducerServiceStatus.call = data.data;
-      } else  {
-        this.streamProducerServiceStatus.call = { status : "ERROR" };
-      }
-      this.streamProducerServiceStatus.info = DataStreamsProducerRepository.getServiceInfo();
-      if (this.streamProducerServiceStatus.call.status == "RUNNING") {
-       this.streamProducerServiceStatus.messageColor = "success";
-      } else if (this.streamProducerServiceStatus.call.status == "ERROR") {
-       this.streamProducerServiceStatus.messageColor = "danger";
-      }  else {
-       this.streamProducerServiceStatus.messageColor = "warning";
-      }
-
-
-      data = await DataStreamsAutoCompleteRepository.status()
-      if (data.data != undefined) {
-        this.streamAutoCompleteServiceStatus.call = data.data;
-      } else  {
-        this.streamAutoCompleteServiceStatus.call = { status : "ERROR" };
-      }
-      this.streamAutoCompleteServiceStatus.info = DataStreamsAutoCompleteRepository.getServiceInfo();
-      if (this.streamAutoCompleteServiceStatus.call.status == "RUNNING") {
-       this.streamAutoCompleteServiceStatus.messageColor = "success";
-      } else if (this.streamAutoCompleteServiceStatus.call.status == "ERROR") {
-       this.streamAutoCompleteServiceStatus.messageColor = "danger";
-      }  else {
-       this.streamAutoCompleteServiceStatus.messageColor = "warning";
-      }
-
-
-      data = await DataStreamsToGraphRepository.status()
-      if (data.data != undefined) {
-        this.streamsToGraphServiceStatus.call = data.data;
-      } else  {
-        this.streamsToGraphServiceStatus.call = { status : "ERROR" };
-      }
-      this.streamsToGraphServiceStatus.info = DataStreamsToGraphRepository.getServiceInfo();
-      if (this.streamsToGraphServiceStatus.call.status == "RUNNING") {
-       this.streamsToGraphServiceStatus.messageColor = "success";
-      } else if (this.streamsToGraphServiceStatus.call.status == "ERROR") {
-       this.streamsToGraphServiceStatus.messageColor = "danger";
-      }  else {
-       this.streamsToGraphServiceStatus.messageColor = "warning";
-      } 
 
     },
     async DbToStreamsChangeStatus() {
@@ -303,4 +345,3 @@ export default {
   }
 };
 </script>
-

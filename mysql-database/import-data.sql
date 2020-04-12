@@ -1462,7 +1462,6 @@ VALUES (1,"Chris", "Pratt", 1979),
        (1319,"Anthony", "Edwards", 1962);
 
  INSERT INTO movies
-
  VALUES (1,"Guardians of the Galaxy", "Action",704613, 8.1, 2014,"A group of intergalactic criminals must pull together to stop a fanatical warrior with plans to purge the universe.","https://m.media-amazon.com/images/M/MV5BMTAwMjU5OTgxNjZeQTJeQWpwZ15BbWU4MDUxNDYxODEx._V1_SX300.jpg"),
         (2,"Interstellar", "Adventure",961763, 8.6, 2014,"A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.","https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"),
         (3,"The Grand Budapest Hotel", "Adventure",492158, 8.1, 2014,"A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.", "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg"),
@@ -1563,7 +1562,6 @@ VALUES (1,"Chris", "Pratt", 1979),
         (98,"Horrible Bosses 2", "Comedy",117742, 6.3, 2014,null, null),
         (99,"Jack Ryan: Shadow Recruit", "Action",100550, 6.2, 2014,null, null),
         (100,"Man Down", "Drama",414, 6.5, 2015,null, null),
-        (101,"Star Wars: Episode VII - The Force Awakens", "Action",594763, 8.2, 2015,null, null),
         (102,"The Revenant", "Adventure",441653, 8.1, 2015,null, null),
         (103,"Joy", "Biography",83047, 6.6, 2015,null, null),
         (104,"Spectre", "Action",287494, 6.8, 2015,null, null),
@@ -1695,7 +1693,7 @@ VALUES (1,"Chris", "Pratt", 1979),
         (230,"Zootopia", "Animation",216939, 8.1, 2016,null, null),
         (231,"The Legend of Tarzan", "Action",80332, 6.4, 2016,null, null),
         (232,"Warcraft", "Action",154327, 7.1, 2016,null, null),
-        (233,"Captain America: Civil War", "Action",340867, 8.0, 2016,null, null),
+        (233,"Captain America: Civil War", "Action",627228, 7.8, 2016, "Political involvement in the Avengers' affairs causes a rift between Captain America and Iron Man.", "https://m.media-amazon.com/images/M/MV5BMjQ0MTgyNjAxMV5BMl5BanBnXkFtZTgwNjUzMDkyODE@._V1_UX182_CR0,0,182,268_AL_.jpg"),
         (234,"Billy Lynn's Long Halftime Walk", "Drama",348, 6.4, 2016,null, null),
         (235,"Moonlight", "Drama",2184, 8.7, 2016,"A young African-American man grapples with his identity and sexuality while experiencing the everyday struggles of childhood, adolescence, and burgeoning adulthood.", "https://m.media-amazon.com/images/M/MV5BNzQxNTIyODAxMV5BMl5BanBnXkFtZTgwNzQyMDA3OTE@._V1_SX300.jpg"),
         (236,"American Pastoral", "Crime",742, 6.2, 2016,null, null),
@@ -1746,7 +1744,20 @@ VALUES (1,"Chris", "Pratt", 1979),
         (281,"Hell or High Water", "Crime",15385, 8.2, 2016,null, null),
         (282,"10 Cloverfield Lane", "Drama",149415, 7.3, 2016,null, null),
         (283,"The Finest Hours", "Action",34666, 6.8, 2016,null, null),
-        (284,"Top Gun", "Action",273458, 6.9, 1986, "As students at the United States Navy's elite fighter weapons school compete to be best in the class, one daring young pilot learns a few things from a civilian instructor that are not taught in the classroom.", "https://m.media-amazon.com/images/M/MV5BZjQxYTA3ODItNzgxMy00N2Y2LWJlZGMtMTRlM2JkZjI1ZDhhXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_SX300.jpg");
+        (284,"Top Gun", "Action",273458, 6.9, 1986, "As students at the United States Navy's elite fighter weapons school compete to be best in the class, one daring young pilot learns a few things from a civilian instructor that are not taught in the classroom.", "https://m.media-amazon.com/images/M/MV5BZjQxYTA3ODItNzgxMy00N2Y2LWJlZGMtMTRlM2JkZjI1ZDhhXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_SX300.jpg"),
+        (285,"Guardians of the Galaxy Vol. 2", "Action",531783, 7.6, 2017, "The Guardians struggle to keep together as a team while dealing with their personal family issues, notably Star-Lord's encounter with his father the ambitious celestial being Ego.", "https://m.media-amazon.com/images/M/MV5BZjQxYTA3ODItNzgxMy00N2Y2LWJlZGMtMTRlM2JkZjI1ZDhhXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_SX300.jpg"),
+        (286,"Battle for the Lost Planet (Galaxy)", "Action",263, 4.3, 2017, "After hijacking a space shuttle, a spy finds that the controls are malfunctioning and sees alien battleships approaching Earth. Many years later, when the arc of his flight path returns to earth, he finds the planet under alien domination.", "https://m.media-amazon.com/images/M/MV5BOTBhMGNhMTUtNTUwNS00NmYwLWI1ZmEtZWVlMTU4NDE3ZTFhXkEyXkFqcGdeQXVyMTQ2MjQyNDc@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (290,"Star Wars: Episode I - The Phantom Menace", "Action",698056, 6.5, 1999, "Two Jedi escape a hostile blockade to find allies and come across a young boy who may bring balance to the Force, but the long dormant Sith resurface to claim their old glory.","https://m.media-amazon.com/images/M/MV5BYTRhNjcwNWQtMGJmMi00NmQyLWE2YzItODVmMTdjNWI0ZDA2XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (291,"Star Wars: Episode II - Attack of the Clones", "Action",618036, 6.5, 2002, "Ten years after initially meeting, Anakin Skywalker shares a forbidden romance with Padmé Amidala, while Obi-Wan Kenobi investigates an assassination attempt on the senator and discovers a secret clone army crafted for the Jedi.","https://m.media-amazon.com/images/M/MV5BMDAzM2M0Y2UtZjRmZi00MzVlLTg4MjEtOTE3NzU5ZDVlMTU5XkEyXkFqcGdeQXVyNDUyOTg3Njg@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (292,"Star Wars: Episode III - Revenge of the Sith", "Action",679858, 7.5, 2005, "Three years into the Clone Wars, the Jedi rescue Palpatine from Count Dooku. As Obi-Wan pursues a new threat, Anakin acts as a double agent between the Jedi Council and Palpatine and is lured into a sinister plan to rule the galaxy.","https://m.media-amazon.com/images/M/MV5BNTc4MTc3NTQ5OF5BMl5BanBnXkFtZTcwOTg0NjI4NA@@._V1_UY268_CR9,0,182,268_AL_.jpg"),
+        (288,"Star Wars: Episode IV - A New Hope", "Action",1181515, 8.6, 1977, "Luke Skywalker joins forces with a Jedi Knight, a cocky pilot, a Wookiee and two droids to save the galaxy from the Empire's world-destroying battle station, while also attempting to rescue Princess Leia from the mysterious Darth Vader.", "https://m.media-amazon.com/images/M/MV5BNzVlY2MwMjktM2E4OS00Y2Y3LWE3ZjctYzhkZGM3YzA1ZWM2XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (293,"Star Wars: Episode V - The Empire Strikes Back", "Action",1109513, 8.7, 1980, "After the Rebels are brutally overpowered by the Empire on the ice planet Hoth, Luke Skywalker begins Jedi training with Yoda, while his friends are pursued by Darth Vader and a bounty hunter named Boba Fett all over the galaxy.","https://m.media-amazon.com/images/M/MV5BYmU1NDRjNDgtMzhiMi00NjZmLTg5NGItZDNiZjU5NTU4OTE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (294,"Star Wars: Episode VI - Return of the Jedi", "Action",909661, 8.3, 1983, "After a daring mission to rescue Han Solo from Jabba the Hutt, the Rebels dispatch to Endor to destroy the second Death Star. Meanwhile, Luke struggles to help Darth Vader back from the dark side without falling into the Emperor's trap.","https://m.media-amazon.com/images/M/MV5BOWZlMjFiYzgtMTUzNC00Y2IzLTk1NTMtZmNhMTczNTk0ODk1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (101,"Star Wars: Episode VII - The Force Awakens", "Action",831843, 7.9, 2015,"Three decades after the Empire's defeat, a new threat arises in the militant First Order. Defected stormtrooper Finn and the scavenger Rey are caught up in the Resistance's search for the missing Luke Skywalker.", "https://m.media-amazon.com/images/M/MV5BOTAzODEzNDAzMl5BMl5BanBnXkFtZTgwMDU1MTgzNzE@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (289,"Star Wars: Episode VIII - The Last Jedi", "Action",531361, 7.0, 2017, "Rey develops her newly discovered abilities with the guidance of Luke Skywalker, who is unsettled by the strength of her powers. Meanwhile, the Resistance prepares for battle with the First Order","https://m.media-amazon.com/images/M/MV5BMjQ1MzcxNjg4N15BMl5BanBnXkFtZTgwNzgwMjY4MzI@._V1_UX182_CR0,0,182,268_AL_.jpg"),
+        (287,"Star Wars: Episode IX - The Rise of Skywalker", "Action",295585, 6.7, 2019, "The surviving members of the resistance face the First Order once again, and the legendary conflict between the Jedi and the Sith reaches its peak bringing the Skywalker saga to its end", "https://m.media-amazon.com/images/M/MV5BMDljNTQ5ODItZmQwMy00M2ExLTljOTQtZTVjNGE2NTg0NGIxXkEyXkFqcGdeQXVyODkzNTgxMDg@._V1_UX182_CR0,0,182,268_AL_.jpg");
+
+
         
 
 INSERT INTO movies_actors

@@ -20,6 +20,7 @@
       <router-link to="/actors">Actors</router-link>  |
       <router-link to="/movies">Movies</router-link>  |
       <router-link to="/autocomplete">Autocomplete</router-link> |
+      <router-link to="/search">Search</router-link> |
       <router-link to="/aggregations">Aggregations</router-link> |
       <router-link to="/services">Services</router-link>
     </div>

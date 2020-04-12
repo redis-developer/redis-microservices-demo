@@ -1,5 +1,10 @@
 package io.redis.demos.autocomplete;
 
+import io.redis.demos.autocomplete.schemas.KeysPrefix;
+import io.redis.demos.autocomplete.schemas.MoviesSchema;
+import io.redisearch.Document;
+import io.redisearch.Query;
+import io.redisearch.SearchResult;
 import io.redisearch.Suggestion;
 import io.redisearch.client.AutoCompleter;
 import io.redisearch.client.Client;
@@ -22,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class RediStreamsToAutocomplete {
+public class RediStreamsToAutocomplete extends KeysPrefix {
 
     // URI used to connect to Redis database
     @Value("${redis.uri}")
@@ -41,14 +46,21 @@ public class RediStreamsToAutocomplete {
     private String consumer;
 
     // Autocomplete (keys)
-    @Value("${redis.autocompletekeys}")
+    @Value("${redis.autocomplete.key}")
     private List<String> autoCompleteKeys;
+
+    // Search (indices)
+    @Value("${redis.search.index}")
+    private List<String> searchIndexKey;
 
     Future<?> streamProcessingTask;
     private String status = "STOPPED";
+    private boolean suggest = true;
+    private boolean fulltext = true; // TODO Change default
+
     private JedisPool jedisPool;
+    private Map<String, Client> suggestClients = new HashMap<>();
     private Map<String, Client> searchClients = new HashMap<>();
-    private Map<String, String> indexNameByType = new HashMap<>();
 
 
     public RediStreamsToAutocomplete() {
@@ -62,15 +74,36 @@ public class RediStreamsToAutocomplete {
             URI redisConnectionString = new URI(redisUri);
             jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
 
-            // create a search client for each key
+            // create a search client for each suggest key
             autoCompleteKeys.forEach( key -> {
+                Client c = new Client( key, jedisPool );
+                suggestClients.put(key, c);
+            });
+
+            // create a search client for each search key
+            searchIndexKey.forEach( key -> {
+                log.info("Prepare index {} ", key);
                 Client c = new Client( key, jedisPool );
                 searchClients.put(key, c);
 
+                try {
+                    c.getInfo();
+                } catch(JedisDataException jde) {
 
-
+                    if (jde.getMessage().equalsIgnoreCase("Unknown Index name")) {
+                        log.warn(" Hard coded section - need some fix");
+                        if ( key.endsWith("movies") ) {
+                            c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions());
+                        }
+                    } else {
+                        throw  jde;
+                    }
+                }
 
             });
+
+
+
         } catch (URISyntaxException use) {
             log.error("Error creating JedisPool {}", use.getMessage());
         }
@@ -102,6 +135,60 @@ public class RediStreamsToAutocomplete {
 
     public String getState() {
         return this.status;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public boolean isSuggest() {
+        return suggest;
+    }
+
+    public void setSuggest(boolean suggest) {
+        this.suggest = suggest;
+    }
+
+    public boolean isFulltext() {
+        return fulltext;
+    }
+
+    public void setFulltext(boolean fulltext) {
+        this.fulltext = fulltext;
+    }
+
+    /**
+     * This method:
+     *    - stop the process
+     *    - changes the status of the full text service
+     **
+     * @return map with the new configuration
+     */
+    public Map<String,String> changeFullText() {
+        Map<String,String> result =  new HashMap<>();
+        this.stopProcessStream();
+        this.setFulltext( ! this.isFulltext() );
+        result.put("fulltext", String.valueOf(this.isFulltext()));
+        result.put("status", String.valueOf(this.getState()));
+        return result;
+    }
+
+    /**
+     * This method:
+     *    - stop the process
+     *    - changes the status of the full text service
+     **
+     * @return map with the new configuration
+     */
+    public Map<String,String> changeSuggest() {
+        log.info("Suggest status before change {} ", this.isSuggest());
+        Map<String,String> result =  new HashMap<>();
+        this.stopProcessStream();
+        this.setSuggest( ! this.isSuggest() );
+        result.put("suggest", String.valueOf(this.isSuggest()));
+        result.put("status", String.valueOf(this.getState()));
+        log.info("Suggest status after change {} ", this.isSuggest());
+        return result;
     }
 
     /**
@@ -178,41 +265,45 @@ public class RediStreamsToAutocomplete {
 
                                         // create/update movie
                                         if (data.get("source.table").equalsIgnoreCase("movies")) {
-
                                             Map<String, Object> movie = new HashMap<>();
-                                            movie.put("title", data.get("title").toString());
-                                            movie.put("genre", data.get("genre").toString());
-                                            movie.put("votes", Integer.parseInt(data.get("votes")));
-                                            movie.put("rating", Float.parseFloat(data.get("rating")));
-                                            movie.put("year", Integer.parseInt(data.get("release_year")));
-                                            movie.put("movie_id", Integer.parseInt(data.get("movie_id")));
+                                            movie.put(MoviesSchema.MOVIE_ID, Integer.parseInt(data.get(MoviesSchema.MOVIE_ID)));
+                                            movie.put(MoviesSchema.TITLE, data.get(MoviesSchema.TITLE).toString());
+                                            movie.put(MoviesSchema.GENRE , data.get(MoviesSchema.GENRE).toString());
+                                            movie.put(MoviesSchema.VOTES, Integer.parseInt(data.get(MoviesSchema.VOTES)));
+                                            movie.put(MoviesSchema.RATING, Float.parseFloat(data.get(MoviesSchema.RATING)));
+                                            movie.put(MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get(MoviesSchema.RELEASE_YEAR)));
+                                            movie.put(MoviesSchema.PLOT, data.get(MoviesSchema.PLOT));
+                                            movie.put(MoviesSchema.POSTER, data.get(MoviesSchema.POSTER));
 
                                             if (operation.equals("UPDATE")) {
-                                                movie.put("before:title", data.get("before:title"));
-                                                movie.put("before:genre", data.get("before:genre"));
-                                                movie.put("before:votes", Integer.parseInt(data.get("before:votes")));
-                                                movie.put("before:rating", Float.parseFloat(data.get("before:rating")));
-                                                movie.put("before:year", Integer.parseInt(data.get("before:release_year")));
+                                                movie.put("before:"+ MoviesSchema.MOVIE_ID, Integer.parseInt(data.get("before:"+ MoviesSchema.MOVIE_ID)));
+                                                movie.put("before:"+ MoviesSchema.TITLE, data.get("before:"+ MoviesSchema.TITLE).toString());
+                                                movie.put("before:"+ MoviesSchema.GENRE , data.get("before:"+ MoviesSchema.GENRE).toString());
+                                                movie.put("before:"+ MoviesSchema.VOTES, Integer.parseInt(data.get("before:"+ MoviesSchema.VOTES)));
+                                                movie.put("before:"+ MoviesSchema.RATING, Float.parseFloat(data.get("before:"+ MoviesSchema.RATING)));
+                                                movie.put("before:"+ MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get("before:"+ MoviesSchema.RELEASE_YEAR)));
+                                                movie.put("before:"+ MoviesSchema.PLOT, data.get("before:"+ MoviesSchema.PLOT));
+                                                movie.put("before:"+ MoviesSchema.POSTER, data.get("before:"+ MoviesSchema.POSTER));
                                             }
-
 
                                             // Prepare the indexing call
-                                            String suggestionKey = "search:movies";
+                                            String suggestionKey = "movies";
                                             String newValue = null;
                                             String oldValue = null;
-                                            String id = movie.get("movie_id").toString();
+                                            String id = movie.get(MoviesSchema.MOVIE_ID).toString();
                                             if (operation.equals("CREATE")) {
-                                                newValue =  movie.get("title").toString();
+                                                newValue =  movie.get(MoviesSchema.TITLE).toString();
                                             } else if (operation.equals("UPDATE")) {
-                                                newValue =  movie.get("title").toString();
-                                                oldValue =  movie.get("before:title").toString();
+                                                newValue =  movie.get(MoviesSchema.TITLE).toString();
+                                                oldValue =  movie.get("before:"+ MoviesSchema.TITLE).toString();
                                             } else  if (operation.equals("DELETE")) {
-                                                oldValue =  movie.get("title").toString();
+                                                oldValue =  movie.get(MoviesSchema.MOVIE_ID).toString();
                                             }
+
+                                            this.indexDocument("movies", movie, operation);
 
                                             this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
                                             jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
-
 
                                         }
                                         if (data.get("source.table").equalsIgnoreCase("actors")) { // create/update actor
@@ -239,7 +330,7 @@ public class RediStreamsToAutocomplete {
                                             }
 
                                             // Prepare the indexing call
-                                            String suggestionKey = "search:actors";
+                                            String suggestionKey = "actors";
                                             String newValue = null;
                                             String oldValue = null;
                                             String id = actor.get("actor_id").toString();
@@ -251,7 +342,6 @@ public class RediStreamsToAutocomplete {
                                             } else  if (operation.equals("DELETE")) {
                                                 oldValue =  actor.get("full_name").toString();
                                             }
-
                                             this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
                                             jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
 
@@ -286,49 +376,50 @@ public class RediStreamsToAutocomplete {
      * @param oldValue the string to remove or remove
      */
     private void updateAutocomplete(String index, String newValue, String oldValue, String id) {
-        Client search = searchClients.get(index);
+        if (suggest) {
+            String complexIndexName = "ms:search:suggest:" + index; // TODO: hard coded values....
+            Client search = suggestClients.get(complexIndexName);
 
-        if ( newValue != null && oldValue == null  ) { // creation
-            log.info("CREATE FTS entry for {} in {}", newValue, index);
-            Suggestion suggestion = Suggestion.builder().str(newValue)
-                    .payload(id)
-                    .build();
-            search.addSuggestion(suggestion, true);
-        } else if ( newValue != null && oldValue != null ) { // update
-
-            log.info( "old {} / new {}", oldValue, newValue ) ;
-            if (oldValue.equals(newValue) ) {
-                log.info("UPDATE FTS Old and New values ({}) are identical, no update of the index {}", newValue, index);
-            } else{
-                log.info("UPDATE FTS entry for {} in {}", newValue, index);
+            if ( newValue != null && oldValue == null  ) { // creation
+                log.info("CREATE FTS entry for {} in {}", newValue, index);
+                Suggestion suggestion = Suggestion.builder().str(newValue)
+                        .payload(id)
+                        .build();
+                search.addSuggestion(suggestion, true);
+            } else if ( newValue != null && oldValue != null ) { // update
+                if (oldValue.equals(newValue) ) {
+                    log.info("UPDATE FTS Old and New values ({}) are identical, no update of the index {}", newValue, index);
+                } else{
+                    log.info("UPDATE FTS entry for {} in {}", newValue, index);
+                    // TODO : wait for https://github.com/RediSearch/JRediSearch/issues/89
+                    Jedis jedis = null;
+                    try {
+                        jedis = jedisPool.getResource();
+                        Suggestion suggestion = Suggestion.builder().str(newValue).payload(id).build();
+                        search.addSuggestion(suggestion, true);
+                        Object result = jedis.sendCommand(AutoCompleter.Command.SUGDEL, index, oldValue);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (jedis != null) {
+                            jedis.close();
+                        }
+                    }
+                }
+            } else if ( newValue == null && oldValue != null ) { // delete
+                log.info("DELETE FTS entry for {} in {}", oldValue, index);
                 // TODO : wait for https://github.com/RediSearch/JRediSearch/issues/89
                 Jedis jedis = null;
                 try {
                     jedis = jedisPool.getResource();
-                    Suggestion suggestion = Suggestion.builder().str(newValue).payload(id).build();
-                    search.addSuggestion(suggestion, true);
-                    Object result = jedis.sendCommand(AutoCompleter.Command.SUGDEL, index, oldValue);
+                    Object result = jedis.sendCommand(AutoCompleter.Command.SUGDEL, index, oldValue  );
                 } catch (Exception e) {
                     e.printStackTrace();
-                } finally {
+                }
+                finally {
                     if (jedis != null) {
                         jedis.close();
                     }
-                }
-            }
-        } else if ( newValue == null && oldValue != null ) { // delete
-            log.info("DELETE FTS entry for {} in {}", oldValue, index);
-            // TODO : wait for https://github.com/RediSearch/JRediSearch/issues/89
-            Jedis jedis = null;
-            try {
-                jedis = jedisPool.getResource();
-                Object result = jedis.sendCommand(AutoCompleter.Command.SUGDEL, index, oldValue  );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            finally {
-                if (jedis != null) {
-                    jedis.close();
                 }
             }
         }
@@ -341,9 +432,9 @@ public class RediStreamsToAutocomplete {
      */
     public List<Map<String,Object>> suggest(String indexName, String term){
         List<Map<String,Object>> result = new ArrayList<>();
-        String complexIndexName = "search:" + indexName; // TODO: hard coded values....
+        String complexIndexName = "ms:search:suggest:" + indexName; // TODO: hard coded values....
         log.info("Suggestion query on {} with {}", complexIndexName, term);
-        Client search = searchClients.get(complexIndexName);
+        Client search = suggestClients.get(complexIndexName);
 
         if (search != null) {
             List<Suggestion> suggestions = search.getSuggestion(term, SuggestionOptions.builder().max(100).fuzzy().with(SuggestionOptions.With.PAYLOAD).build() );
@@ -362,6 +453,94 @@ public class RediStreamsToAutocomplete {
         return result;
     }
 
+    /**
+     *
+     * @param indexName
+     * @param q
+     * @param offset
+     * @param limit
+     * @return
+     */
+    public Map<String,Object> search(String indexName, String q, int offset, int limit) {
+        Map<String,Object> result = new HashMap<>();
+        String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
+        Client client = searchClients.get(complexIndexName);
 
+        log.info("Search `{}` with `{}` ", complexIndexName, q);
+
+        Query query = new Query(q)
+                        .limit(offset, limit);
+
+        SearchResult queryResult = client.search(query);
+        result.put("totalResults", queryResult.totalResults);
+        List<Map<String, Object>> docsToReturn = new ArrayList<>();
+
+
+        // remove the properties array and create attributes
+        List<Document> docs =  queryResult.docs;
+
+        for (Document doc :docs) {
+
+            Map<String,Object> props = new HashMap<>();
+            Map<String,Object> meta = new HashMap<>();
+            meta.put("id", doc.getId());
+            meta.put("score", doc.getScore());
+            doc.getProperties().forEach( e -> {
+                props.put( e.getKey(), e.getValue() );
+            });
+
+            Map<String,Object> docMeta = new HashMap<>();
+            docMeta.put("meta",meta);
+            docMeta.put("body",props);
+            docsToReturn.add(docMeta);
+        }
+
+        result.put("docs", docsToReturn);
+        return result;
+    }
+
+    /**
+     *
+     * @param indexName
+     * @param q
+     * @return
+     */
+    public Map<String,Object> search(String indexName, String q) {
+        return search(indexName,q, 0, 50);
+    }
+
+
+
+    private void indexDocument(String indexName, Map<String,Object> document, String operation) {
+        if (fulltext) {
+            log.info("Indexing document");
+            String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
+            Client client = searchClients.get(complexIndexName);
+            try {
+                String docId = getKeyForDoc(indexName, document.get("movie_id"));
+                if (operation.equalsIgnoreCase("CREATE")) {
+                    // remove null values
+                    // TODO : Check JRedis and manage bug/PR
+                    document.values().removeIf(Objects::isNull);
+                    client.addDocument(docId, document);
+                    log.info("Adding fulltext search for {}.", docId);
+                } else if (operation.equalsIgnoreCase("UPDATE")) {
+                    document.values().removeIf(Objects::isNull);
+                    client.updateDocument(docId, 1, document);
+                    log.info("Updating fulltext search for {}.", docId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("Cannot insert/update document {} .", getKeyForDoc(indexName, document.get("movie_id")));
+                log.error(document.toString());
+            }
+        }
+    }
+
+    public Map<String,Object> getInfoIndex(String indexName) {
+        String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
+        Client client = searchClients.get(complexIndexName);
+        return client.getInfo();
+    }
 
 }

@@ -33,6 +33,15 @@ export default {
     return Repository.get(`${resource}/${item}/autocomplete?q=${term}`);
   }, 
 
+  search(item, term) {
+    return Repository.get(`${resource}/search/${item}?q=${term}`);
+  }, 
+
+
+  changeConfigFlag(config) {
+    return Repository.get(`${resource}/config/${config}`);
+  }, 
+
 
   getServiceInfo(){
     return resource;

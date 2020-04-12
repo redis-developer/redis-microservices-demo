@@ -53,6 +53,12 @@ Vue.use(VueRouter)
   },
 
   {
+    path: '/search/',
+    name: 'Search',
+    component: () => import('../views/Search.vue')
+  },
+
+  {
     path: '/aggregations/',
     name: 'Aggregations',
     component: () => import('../views/Aggregations.vue')
