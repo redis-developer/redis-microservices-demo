@@ -21,11 +21,6 @@ Vue.use(VueRouter)
     component: () => import('../views/Services.vue')
   },
   {
-    path: '/posts',
-    name: 'Posts',
-    component: () => import('../views/Posts.vue')
-  },
-  {
     path: '/actors',
     name: 'Actors',
     component: () => import('../views/Actors.vue')

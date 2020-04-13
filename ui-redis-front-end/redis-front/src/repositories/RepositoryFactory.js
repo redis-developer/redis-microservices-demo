@@ -1,4 +1,3 @@
-import PostsRepository from "./postsRepository";
 import RDBMSRepository from "./RDBMSRepository";
 import CacheInvalidatorRepository from "./CacheInvalidatorRepository";
 import DataStreamsToGraphRepository from "./DataStreamsToGraphRepository";
@@ -8,15 +7,13 @@ import DataStreamsAutoCompleteRepository from "./DataStreamsAutoCompleteReposito
 
 
 const repositories = {
-  posts: PostsRepository,
   rdbmsRepository: RDBMSRepository,
   cacheInvalidatorRepository: CacheInvalidatorRepository,
+  
   dataStreamsToGraphRepository: DataStreamsToGraphRepository,
-
   dataStreamsProducerRepository: DataStreamsProducerRepository,
   dataStreamsAutoCompleteRepository: DataStreamsAutoCompleteRepository,
 
-  // other repositories ...
 };
 
 export const RepositoryFactory = {

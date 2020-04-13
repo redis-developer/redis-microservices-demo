@@ -1,11 +1,9 @@
 import Repository from "./Repository";
 
-// You can use your own logic to set your local or production domain
-const baseDomain = "http://localhost:8081";
-// The base URL is empty this time due we are using the jsonplaceholder API
+// Checl proxy configuration
+const baseDomain = "";
 const baseURL = `${baseDomain}`;
-
-const resource = baseURL + "/api/1.0/data-mysql-api";
+const resource = baseURL + "/api/legacy/";
 export default {
 
   async status() {

@@ -24,9 +24,10 @@ public class MoviesSchema {
         return new Schema()
                 .addTextField(TITLE, 5.0)
                 .addTextField(PLOT, 1.0)
-                .addNumericField(RELEASE_YEAR)
-                .addNumericField(RATING)
-                .addNumericField(VOTES);
+                .addTextField(GENRE, 1)
+                .addSortableNumericField(RELEASE_YEAR)
+                .addSortableNumericField(RATING)
+                .addSortableNumericField(VOTES);
     }
 
 }

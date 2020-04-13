@@ -1,11 +1,9 @@
 import Repository from "./Repository";
 
-// You can use your own logic to set your local or production domain
-const baseDomain = "http://localhost:8082";
-// The base URL is empty this time due we are using the jsonplaceholder API
+// CHeck proxy config
+const baseDomain = "";
 const baseURL = `${baseDomain}`;
-
-const resource = baseURL + "/api/1.0/data-streams-producer";
+const resource = baseURL + "/api/data-to-streams";
 export default {
 
   async status() {

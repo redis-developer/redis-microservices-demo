@@ -1,11 +1,9 @@
 import Repository from "./Repository";
 
-// You can use your own logic to set your local or production domain
-const baseDomain = "http://localhost:8083";
-// The base URL is empty this time due we are using the jsonplaceholder API
+// Chck proxy configuration
+const baseDomain = "";
 const baseURL = `${baseDomain}`;
-
-const resource = baseURL + "/api/1.0/data-streams-to-graph";
+const resource = baseURL + "/api/graph";
 export default {
   
   async status() {

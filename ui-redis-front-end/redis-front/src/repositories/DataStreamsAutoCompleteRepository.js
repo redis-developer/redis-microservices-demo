@@ -1,11 +1,9 @@
 import Repository from "./Repository";
 
-// You can use your own logic to set your local or production domain
-const baseDomain = "http://localhost:8085";
-// The base URL is empty this time due we are using the jsonplaceholder API
+// look in the proxy configuration for mapping
+const baseDomain = "";
 const baseURL = `${baseDomain}`;
-
-const resource = baseURL + "/api/1.0/data-streams-to-autocomplete/";
+const resource = baseURL + "/api/fulltext/";
 export default {
 
   async status() {
