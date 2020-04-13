@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="px-8 py-8 min-h-screen">
 
-    <h1>Search with Redis</h1>
+    <h1> <b-icon-camera-video/>  Search Movies with RediSearch</h1>
     
     <b-form @submit="onSubmit" @reset="onReset" >
       <b-input-group
@@ -98,11 +98,3 @@ export default {
 };
 </script>
 
-<style>
-
-.movieCard {
-  background-color: red;
-  max-width: 25%;
-}
-
-</style>

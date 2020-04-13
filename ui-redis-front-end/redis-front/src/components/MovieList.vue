@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-table
-      sticky-header="400px"
+      sticky-header="800px"
       striped
       hover
       v-if="!isLoading"

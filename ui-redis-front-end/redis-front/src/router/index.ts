@@ -48,9 +48,15 @@ Vue.use(VueRouter)
   },
 
   {
-    path: '/search/',
-    name: 'Search',
-    component: () => import('../views/Search.vue')
+    path: '/search/actors',
+    name: 'SearchActors',
+    component: () => import('../views/SearchActors.vue')
+  },
+
+  {
+    path: '/search/movies',
+    name: 'SearchMovies',
+    component: () => import('../views/SearchMovies.vue')
   },
 
   {

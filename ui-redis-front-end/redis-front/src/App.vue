@@ -1,6 +1,43 @@
 <template>
   <div id="app">
 
+<div style="margin-bottom:10px">
+  <b-navbar toggleable="lg" type="dark" variant="dark">
+    <b-navbar-brand to="/" > RMDB</b-navbar-brand>
+    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+    <b-collapse id="nav-collapse" is-nav>
+      <b-navbar-nav>
+        <b-nav-item  to="/movies" > | <b-icon-camera-video /> Movies <small>(Legacy)</small> </b-nav-item>
+        <b-nav-item  to="/actors" > <b-icon-people-circle /> Actors <small>(Legacy)</small> | </b-nav-item>
+        <b-nav-item>  </b-nav-item>
+        <b-nav-item>  </b-nav-item>
+        <b-nav-item>  </b-nav-item>
+        <b-nav-item>  </b-nav-item>
+        <b-nav-item><img src="/imgs/redis-logo.svg" height="30" /></b-nav-item>  
+        <b-nav-item-dropdown text="Search " right>     <!-- Using 'button-content' slot -->
+          <b-dropdown-item to="/search/movies" > <b-icon-camera-video /> Movies</b-dropdown-item>
+          <b-dropdown-item to="/search/actors" > <b-icon-people-circle />  Actors</b-dropdown-item>
+          <b-dropdown-item to="/autocomplete" >Autocomplete</b-dropdown-item>
+        </b-nav-item-dropdown>
+        <b-nav-item>|  </b-nav-item>
+        <b-nav-item  to="/services" > <b-icon-cone-striped /> Services  </b-nav-item>
+      </b-navbar-nav>
+      
+
+      <b-navbar-nav class="ml-auto">
+        <img src="/imgs/redislabs.png" height="30" />
+      </b-navbar-nav>
+      
+    </b-collapse>
+  </b-navbar>
+
+</div>
+
+
+
+<router-view />
+
+  
 
 <div id="sticky" v-if="contextualHelp" >
   <b-button id="popover-target-1">
@@ -15,18 +52,6 @@
   </b-popover>
 </div>
 
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/actors">Actors</router-link>  |
-      <router-link to="/movies">Movies</router-link>  |
-      <router-link to="/autocomplete">Autocomplete</router-link> |
-      <router-link to="/search">Search</router-link> |
-      <router-link to="/aggregations">Aggregations</router-link> |
-      <router-link to="/services">Services</router-link>
-    </div>
-    
-
-    <router-view/>
   </div>
 </template>
 
@@ -65,12 +90,12 @@
   color: #42b983;
 }
 
-#sticky{
-  position: fixed;
-  right: 16px;
+#sticky {
+  position: fixed; 
+  bottom: 5px; 
+  right: 10px;
   z-index: 99;
-  margin: 5px;
-}
+ }
 
 
 </style>
