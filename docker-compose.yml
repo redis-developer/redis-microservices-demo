@@ -86,23 +86,23 @@ services:
       - redis-service
     restart: always
 
- front-end:
-   build:
-     context: ./ui-redis-front-end/redis-front
-     dockerfile: Dockerfile
-   ports:
-     - "8080:80"
-   networks:
-     - redis-microservices-network
-   depends_on:
-     - redis-service
-     - mysql-debezium-service
-     - cdc-to-redis-streams-service
-     - streams-to-autocomplete-service
-     - streams-to-graph-service
-     - cdc-to-cache-service
-     - sql-legacy-service
-   restart: always
+  front-end:
+    build:
+      context: ./ui-redis-front-end/redis-front
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - redis-microservices-network
+    depends_on:
+      - redis-service
+      - mysql-debezium-service
+      - cdc-to-redis-streams-service
+      - streams-to-autocomplete-service
+      - streams-to-graph-service
+      - cdc-to-cache-service
+      - sql-legacy-service
+    restart: always
 
 networks:
   redis-microservices-network:
