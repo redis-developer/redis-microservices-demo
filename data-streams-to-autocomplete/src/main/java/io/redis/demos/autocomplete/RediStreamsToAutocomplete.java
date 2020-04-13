@@ -1,5 +1,6 @@
 package io.redis.demos.autocomplete;
 
+import io.redis.demos.autocomplete.schemas.ActorsSchema;
 import io.redis.demos.autocomplete.schemas.KeysPrefix;
 import io.redis.demos.autocomplete.schemas.MoviesSchema;
 import io.redisearch.Document;
@@ -29,6 +30,9 @@ import java.util.stream.Collectors;
 @Component
 public class RediStreamsToAutocomplete extends KeysPrefix {
 
+    private final static String SUGGEST_OP = "SUGG";
+    private final static String INDEX_OP = "IDX";
+
     // URI used to connect to Redis database
     @Value("${redis.uri}")
     private String redisUri;
@@ -38,25 +42,28 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
     private List<String> streamList;
 
     // Stream lists
-    @Value("${redis.groupname}")
-    private String groupName;
+    @Value("${redis.groupnameprefix}")
+    private String groupNamePrefix;
 
     // Consumer name of this instance
     @Value("${redis.consumer}")
     private String consumer;
 
     // Autocomplete (keys)
-    @Value("${redis.autocomplete.key}")
-    private List<String> autoCompleteKeys;
+    //@Value("${redis.autocomplete.key}")
+    //private List<String> autoCompleteKeys;
 
     // Search (indices)
-    @Value("${redis.search.index}")
-    private List<String> searchIndexKey;
+    //@Value("${redis.search.index}")
+    //private List<String> searchIndexKey;
 
     Future<?> streamProcessingTask;
     private String status = "STOPPED";
-    private boolean suggest = true;
+    private boolean suggest = false;
     private boolean fulltext = true; // TODO Change default
+    String groupNameSuggest = null;
+    String groupNameSearch = null;
+
 
     private JedisPool jedisPool;
     private Map<String, Client> suggestClients = new HashMap<>();
@@ -68,33 +75,48 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
     }
 
     @PostConstruct
-    private void afterConstruct(){
+    private void init(){
+
+        groupNameSuggest = groupNamePrefix.concat(".suggest");
+        groupNameSearch = groupNamePrefix.concat(".index");
+
         try {
             log.info("Create Jedis Pool with {} ", redisUri);
             URI redisConnectionString = new URI(redisUri);
             jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
 
-            // create a search client for each suggest key
-            autoCompleteKeys.forEach( key -> {
-                Client c = new Client( key, jedisPool );
-                suggestClients.put(key, c);
-            });
+            // loop on each streams to
+            //  - get search and autocomplete keys
+            //
 
-            // create a search client for each search key
-            searchIndexKey.forEach( key -> {
-                log.info("Prepare index {} ", key);
-                Client c = new Client( key, jedisPool );
-                searchClients.put(key, c);
+            streamList.forEach(streamKey -> {
+                String[] s = streamKey.split(":");
+                String itemName = s[s.length-1];
 
+                // suggestion
+                String suggKey = SUGGEST_PREFIX + itemName;
+                Client c = new Client( suggKey , jedisPool );
+                suggestClients.put(suggKey, c);
+
+                // search index, create index if not present
+                String searchKey = SEARCH_INDEX_PREFIX + itemName;
+                log.info("Prepare index {} ", searchKey);
+                c = new Client( searchKey, jedisPool );
+                searchClients.put(searchKey, c);
+
+                // check if search index exists if not create it
                 try {
                     c.getInfo();
                 } catch(JedisDataException jde) {
-
                     if (jde.getMessage().equalsIgnoreCase("Unknown Index name")) {
                         log.warn(" Hard coded section - need some fix");
-                        if ( key.endsWith("movies") ) {
+                        if ( itemName.equalsIgnoreCase("movies")) {
                             c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions());
                         }
+                        if ( itemName.equalsIgnoreCase("actors")) {
+                            c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions());
+                        }
+                        // TODO : add other types/schema & make it dynamic
                     } else {
                         throw  jde;
                     }
@@ -103,14 +125,67 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
             });
 
 
-
         } catch (URISyntaxException use) {
             log.error("Error creating JedisPool {}", use.getMessage());
         }
         log.info("Will look at {} streams", streamList);
     }
 
+    /**
+     *
+     * @return
+     */
+    private void createConsumerGroups(Jedis jedis) {
+        log.info("create groups for search & suggest for each streams");
+
+        streamList.forEach( streamKey -> {
+            String[] s = streamKey.split(":");
+            String itemName = s[s.length-1];
+            StreamEntryID streamEtnryId = new StreamEntryID("0-0");
+
+            // Suggest
+            try {
+                // Create consumer if does not exist already
+                jedis.xgroupCreate(
+                        streamKey,
+                        groupNameSuggest,
+                        streamEtnryId,
+                        true
+                );
+                log.info(" Consumer Group {} / {} created", streamKey, groupNameSuggest);
+
+            } catch (JedisDataException jde) {
+                if (jde.getMessage().startsWith("BUSYGROUP")) {
+                    log.info(" Consumer Group {} / {} already exists", streamKey, groupNameSuggest);
+                }
+            }
+
+            // Search Fulltext Index
+            try {
+                // Create consumer if does not exist already
+                jedis.xgroupCreate(
+                        streamKey,
+                        groupNameSearch,
+                        streamEtnryId,
+                        true
+                );
+                log.info(" Consumer Group {} / {} created", streamKey, groupNameSearch);
+
+            } catch (JedisDataException jde) {
+                if (jde.getMessage().startsWith("BUSYGROUP")) {
+                    log.info(" Consumer Group {} / {} already exists", streamKey, groupNameSearch);
+                }
+            }
+
+        });
+
+
+
+    }
+
+
     public Map<String,String> processStream() {
+        init(); // TODO : not the best but simple for now to be sure that all resources are newly created
         Map<String, String> result =  new HashMap<>();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         streamProcessingTask = executor.submit(this::processStreamInThread);
@@ -208,154 +283,112 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
             Jedis jedis = null;
             try {
                 jedis = jedisPool.getResource();
+
+                createConsumerGroups(jedis);
+
                 Map.Entry<String, StreamEntryID>[] xReadQueries = (Map.Entry<String, StreamEntryID>[]) new Map.Entry[2];
                 Jedis finalJedis = jedis;
                 final int[] streamCtr = { 0 };
+
+                // Prepare read queries for each group
                 streamList.forEach( stream -> {
-
                     StreamEntryID streamEtnryId = new StreamEntryID("0-0");
-
-
                     Map.Entry<String, StreamEntryID> queryStream =
                             new AbstractMap.SimpleImmutableEntry<>( stream, StreamEntryID.UNRECEIVED_ENTRY);
                     xReadQueries[streamCtr[0]] = queryStream;
                     streamCtr[0]++;
-
-                    try {
-                        // Create consumer if does not exist already
-                        finalJedis.xgroupCreate(
-                                stream,
-                                groupName,
-                                streamEtnryId,
-                                true
-                        );
-                        log.info(" Consumer Group {} / {} created", stream, groupName);
-
-                    } catch (JedisDataException jde) {
-                        if (jde.getMessage().startsWith("BUSYGROUP")) {
-                            log.info(" Consumer Group {} / {} already exists", stream, groupName);
-                        }
-                    }
-
                 });
+
                 boolean loop = true;
                 try {
                     while(loop) {
                         loop = !streamProcessingTask.isCancelled();
 
-                        // consume messages
-                        List<Map.Entry<String, List<StreamEntry>>> events = jedis.xreadGroup(
-                                groupName,
-                                consumer,
-                                1,
-                                0,
-                                false,
-                                xReadQueries
-                        );
+                        // consume messages for full text
+                        if (isFulltext()) {
+                            List<Map.Entry<String, List<StreamEntry>>> eventsFullText = jedis.xreadGroup(
+                                    groupNameSearch,
+                                    consumer,
+                                    1,
+                                    0,
+                                    false,
+                                    xReadQueries
+                            );
 
-                        if (events != null) {
-                            for (Map.Entry m : events) {
-                                if (m.getValue() instanceof ArrayList) {
-                                    List<StreamEntry> l = (List) m.getValue();
-                                    if (l.size() != 0) {
-
-                                        Map<String, String> data = l.get(0).getFields();
-
-                                        String operation = data.get("source.operation").toUpperCase();
-
-                                        // create/update movie
-                                        if (data.get("source.table").equalsIgnoreCase("movies")) {
-                                            Map<String, Object> movie = new HashMap<>();
-                                            movie.put(MoviesSchema.MOVIE_ID, Integer.parseInt(data.get(MoviesSchema.MOVIE_ID)));
-                                            movie.put(MoviesSchema.TITLE, data.get(MoviesSchema.TITLE).toString());
-                                            movie.put(MoviesSchema.GENRE , data.get(MoviesSchema.GENRE).toString());
-                                            movie.put(MoviesSchema.VOTES, Integer.parseInt(data.get(MoviesSchema.VOTES)));
-                                            movie.put(MoviesSchema.RATING, Float.parseFloat(data.get(MoviesSchema.RATING)));
-                                            movie.put(MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get(MoviesSchema.RELEASE_YEAR)));
-                                            movie.put(MoviesSchema.PLOT, data.get(MoviesSchema.PLOT));
-                                            movie.put(MoviesSchema.POSTER, data.get(MoviesSchema.POSTER));
-
-                                            if (operation.equals("UPDATE")) {
-                                                movie.put("before:"+ MoviesSchema.MOVIE_ID, Integer.parseInt(data.get("before:"+ MoviesSchema.MOVIE_ID)));
-                                                movie.put("before:"+ MoviesSchema.TITLE, data.get("before:"+ MoviesSchema.TITLE).toString());
-                                                movie.put("before:"+ MoviesSchema.GENRE , data.get("before:"+ MoviesSchema.GENRE).toString());
-                                                movie.put("before:"+ MoviesSchema.VOTES, Integer.parseInt(data.get("before:"+ MoviesSchema.VOTES)));
-                                                movie.put("before:"+ MoviesSchema.RATING, Float.parseFloat(data.get("before:"+ MoviesSchema.RATING)));
-                                                movie.put("before:"+ MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get("before:"+ MoviesSchema.RELEASE_YEAR)));
-                                                movie.put("before:"+ MoviesSchema.PLOT, data.get("before:"+ MoviesSchema.PLOT));
-                                                movie.put("before:"+ MoviesSchema.POSTER, data.get("before:"+ MoviesSchema.POSTER));
+                            if (eventsFullText != null) {
+                                for (Map.Entry m : eventsFullText) {
+                                    if (m.getValue() instanceof ArrayList) {
+                                        List<StreamEntry> l = (List) m.getValue();
+                                        if (l.size() != 0) {
+                                            Map<String, String> data = l.get(0).getFields();
+                                            String operation = data.get("source.operation").toUpperCase();
+                                            if (data.get("source.table").equalsIgnoreCase("movies")) {
+                                                updateSearchForMovie(data, operation);
+                                                jedis.xack(m.getKey().toString(), groupNameSearch, l.get(0).getID());
                                             }
-
-                                            // Prepare the indexing call
-                                            String suggestionKey = "movies";
-                                            String newValue = null;
-                                            String oldValue = null;
-                                            String id = movie.get(MoviesSchema.MOVIE_ID).toString();
-                                            if (operation.equals("CREATE")) {
-                                                newValue =  movie.get(MoviesSchema.TITLE).toString();
-                                            } else if (operation.equals("UPDATE")) {
-                                                newValue =  movie.get(MoviesSchema.TITLE).toString();
-                                                oldValue =  movie.get("before:"+ MoviesSchema.TITLE).toString();
-                                            } else  if (operation.equals("DELETE")) {
-                                                oldValue =  movie.get(MoviesSchema.MOVIE_ID).toString();
+                                            if (data.get("source.table").equalsIgnoreCase("actors")) { // create/update actor
+                                                updateSearchForActor(data, operation);
+                                                jedis.xack(m.getKey().toString(), groupNameSearch, l.get(0).getID());
                                             }
-
-                                            this.indexDocument("movies", movie, operation);
-
-                                            this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
-                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
-
-                                        }
-                                        if (data.get("source.table").equalsIgnoreCase("actors")) { // create/update actor
-                                            Map<String, Object> actor = new HashMap<>();
-                                            actor.put("first_name", data.get("first_name"));
-                                            String lastName = data.get("last_name");
-                                            if (lastName == null || lastName.trim().isEmpty()) {
-                                                lastName = "-";
-                                            }
-                                            actor.put("last_name", lastName);
-                                            actor.put("dob", Integer.parseInt(data.get("dob")));
-                                            actor.put("actor_id", Integer.parseInt(data.get("actor_id")));
-                                            actor.put( "full_name",  String.format("%s %s", data.get("first_name"), lastName ));
-
-                                            if (operation.equals("UPDATE")) {
-                                                String beforeLastName = data.get("before:last_name");
-                                                if (beforeLastName == null || beforeLastName.trim().isEmpty()) {
-                                                    beforeLastName = "-";
-                                                }
-                                                actor.put("before:last_name", beforeLastName);
-                                                actor.put("before:dob", Integer.parseInt(data.get("before:dob")));
-                                                actor.put("before:actor_id", Integer.parseInt(data.get("before:actor_id")));
-                                                actor.put( "before:full_name",  String.format("%s %s", data.get("before:first_name"), beforeLastName ));
-                                            }
-
-                                            // Prepare the indexing call
-                                            String suggestionKey = "actors";
-                                            String newValue = null;
-                                            String oldValue = null;
-                                            String id = actor.get("actor_id").toString();
-                                            if (operation.equals("CREATE")) {
-                                                newValue =  actor.get("full_name").toString();
-                                            } else if (operation.equals("UPDATE")) {
-                                                newValue =  actor.get("full_name").toString();
-                                                oldValue =  actor.get("before:full_name").toString();
-                                            } else  if (operation.equals("DELETE")) {
-                                                oldValue =  actor.get("full_name").toString();
-                                            }
-                                            this.updateAutocomplete(suggestionKey,newValue, oldValue, id);
-                                            jedis.xack(m.getKey().toString(), groupName, l.get(0).getID());
-
                                         }
                                     }
                                 }
-                            }
-                        } else {
-                            log.debug("no event in stream - ");
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(500);
-                            } catch (InterruptedException e1) {
+                            } else {
+                                log.debug("no event in stream - ");
+                                try {
+                                    // if we have to process 2 types of event make it shorter
+                                    if (isSuggest()) {
+                                        TimeUnit.MILLISECONDS.sleep(100);
+                                    } else {
+                                        TimeUnit.MILLISECONDS.sleep(500);
+                                    }
+                                } catch (InterruptedException e1) {
+                                }
                             }
                         }
+
+                        // consume messages for suggest
+                        if (isSuggest()) {
+                            List<Map.Entry<String, List<StreamEntry>>> eventsSuggest = jedis.xreadGroup(
+                                    groupNameSuggest,
+                                    consumer,
+                                    1,
+                                    0,
+                                    false,
+                                    xReadQueries
+                            );
+
+                            if (eventsSuggest != null) {
+                                for (Map.Entry m : eventsSuggest) {
+                                    if (m.getValue() instanceof ArrayList) {
+                                        List<StreamEntry> l = (List) m.getValue();
+                                        if (l.size() != 0) {
+                                            Map<String, String> data = l.get(0).getFields();
+                                            String operation = data.get("source.operation").toUpperCase();
+                                            if (data.get("source.table").equalsIgnoreCase("movies")) {
+                                                updateSuggestForMovie(data, operation);
+                                                jedis.xack(m.getKey().toString(), groupNameSuggest, l.get(0).getID());
+                                            }
+                                            if (data.get("source.table").equalsIgnoreCase("actors")) { // create/update actor
+                                                updateSuggestForActor(data, operation);
+                                                jedis.xack(m.getKey().toString(), groupNameSuggest, l.get(0).getID());
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                log.debug("no event in stream - ");
+                                try {
+                                    // if we have to process 2 types of event make it shorter
+                                    if (isFulltext()) {
+                                        TimeUnit.MILLISECONDS.sleep(100);
+                                    } else {
+                                        TimeUnit.MILLISECONDS.sleep(500);
+                                    }                                } catch (InterruptedException e1) {
+                                }
+                            }
+                        }
+
                     }
                 } catch (JedisDataException jde) {
                     log.warn( jde.getMessage() );
@@ -377,7 +410,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
      */
     private void updateAutocomplete(String index, String newValue, String oldValue, String id) {
         if (suggest) {
-            String complexIndexName = "ms:search:suggest:" + index; // TODO: hard coded values....
+            String complexIndexName = SUGGEST_PREFIX + index; // TODO: hard coded values....
             Client search = suggestClients.get(complexIndexName);
 
             if ( newValue != null && oldValue == null  ) { // creation
@@ -432,7 +465,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
      */
     public List<Map<String,Object>> suggest(String indexName, String term){
         List<Map<String,Object>> result = new ArrayList<>();
-        String complexIndexName = "ms:search:suggest:" + indexName; // TODO: hard coded values....
+        String complexIndexName = SUGGEST_PREFIX + indexName;
         log.info("Suggestion query on {} with {}", complexIndexName, term);
         Client search = suggestClients.get(complexIndexName);
 
@@ -512,12 +545,20 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
 
 
     private void indexDocument(String indexName, Map<String,Object> document, String operation) {
+
+        String tablePk = "";
+        if (indexName.equalsIgnoreCase("movies")) {
+            tablePk = "movie_id";
+        } else if (indexName.equalsIgnoreCase("actors")) {
+            tablePk = "actor_id";
+        }
+
         if (fulltext) {
-            log.info("Indexing document");
-            String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
+            log.info("{} Indexing document ", operation);
+            String complexIndexName = SEARCH_INDEX_PREFIX + indexName;
             Client client = searchClients.get(complexIndexName);
             try {
-                String docId = getKeyForDoc(indexName, document.get("movie_id"));
+                String docId = getKeyForDoc(indexName, document.get(tablePk));
                 if (operation.equalsIgnoreCase("CREATE")) {
                     // remove null values
                     // TODO : Check JRedis and manage bug/PR
@@ -526,12 +567,13 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
                     log.info("Adding fulltext search for {}.", docId);
                 } else if (operation.equalsIgnoreCase("UPDATE")) {
                     document.values().removeIf(Objects::isNull);
+                    document.keySet().removeIf( e -> e.startsWith("before:")  );
                     client.updateDocument(docId, 1, document);
                     log.info("Updating fulltext search for {}.", docId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("Cannot insert/update document {} .", getKeyForDoc(indexName, document.get("movie_id")));
+                log.error("Cannot insert/update document {} .", getKeyForDoc(indexName, document.get(tablePk)));
                 log.error(document.toString());
             }
         }
@@ -542,5 +584,147 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
         Client client = searchClients.get(complexIndexName);
         return client.getInfo();
     }
+
+
+
+    /**
+     * Take event and update suggestion for Movie
+     * @param data
+     * @param operation
+     */
+    private void updateSuggestForMovie(Map<String, String> data, String operation) {
+        processMovie(data, groupNameSuggest , operation, SUGGEST_OP  );
+    }
+
+    /**
+     * Take event and update suggestion for Movie
+     * @param data
+     * @param operation
+     */
+    private void updateSearchForMovie(Map<String, String> data, String operation) {
+        processMovie(data, groupNameSearch , operation, INDEX_OP  );
+    }
+
+    /**
+     *
+     * @param data : the Event message
+     * @param groupName : the group that is sending the message
+     * @param operation : Create, Update, Delete
+     * @param ftsActionType : to check if this is suggest or index
+     */
+    private void processMovie(Map<String, String> data, String groupName, String operation, String  ftsActionType){
+        Map<String, Object> movie = new HashMap<>();
+        movie.put(MoviesSchema.MOVIE_ID, Integer.parseInt(data.get(MoviesSchema.MOVIE_ID)));
+        movie.put(MoviesSchema.TITLE, data.get(MoviesSchema.TITLE).toString());
+        movie.put(MoviesSchema.GENRE , data.get(MoviesSchema.GENRE).toString());
+        movie.put(MoviesSchema.VOTES, Integer.parseInt(data.get(MoviesSchema.VOTES)));
+        movie.put(MoviesSchema.RATING, Float.parseFloat(data.get(MoviesSchema.RATING)));
+        movie.put(MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get(MoviesSchema.RELEASE_YEAR)));
+        movie.put(MoviesSchema.PLOT, data.get(MoviesSchema.PLOT));
+        movie.put(MoviesSchema.POSTER, data.get(MoviesSchema.POSTER));
+
+        if (operation.equals("UPDATE")) {
+            movie.put("before:"+ MoviesSchema.MOVIE_ID, Integer.parseInt(data.get("before:"+ MoviesSchema.MOVIE_ID)));
+            movie.put("before:"+ MoviesSchema.TITLE, data.get("before:"+ MoviesSchema.TITLE).toString());
+            movie.put("before:"+ MoviesSchema.GENRE , data.get("before:"+ MoviesSchema.GENRE).toString());
+            movie.put("before:"+ MoviesSchema.VOTES, Integer.parseInt(data.get("before:"+ MoviesSchema.VOTES)));
+            movie.put("before:"+ MoviesSchema.RATING, Float.parseFloat(data.get("before:"+ MoviesSchema.RATING)));
+            movie.put("before:"+ MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get("before:"+ MoviesSchema.RELEASE_YEAR)));
+            movie.put("before:"+ MoviesSchema.PLOT, data.get("before:"+ MoviesSchema.PLOT));
+            movie.put("before:"+ MoviesSchema.POSTER, data.get("before:"+ MoviesSchema.POSTER));
+        }
+
+        // Prepare the indexing call
+        String itemType = "movies";
+        String newValue = null;
+        String oldValue = null;
+        String id = movie.get(MoviesSchema.MOVIE_ID).toString();
+        if (operation.equals("CREATE")) {
+            newValue =  movie.get(MoviesSchema.TITLE).toString();
+        } else if (operation.equals("UPDATE")) {
+            newValue =  movie.get(MoviesSchema.TITLE).toString();
+            oldValue =  movie.get("before:"+ MoviesSchema.TITLE).toString();
+        } else  if (operation.equals("DELETE")) {
+            oldValue =  movie.get(MoviesSchema.MOVIE_ID).toString();
+        }
+
+        if ( ftsActionType.equalsIgnoreCase(INDEX_OP) ) {
+            this.indexDocument( itemType, movie, operation);
+        }
+        if ( ftsActionType.equalsIgnoreCase(SUGGEST_OP)) {
+            this.updateAutocomplete(itemType,newValue, oldValue, id);
+        }
+    }
+
+    /**
+     * Take event and update suggestion for Movie
+     * @param data
+     * @param operation
+     */
+    private void updateSuggestForActor(Map<String, String> data, String operation) {
+        processActor(data, groupNameSuggest , operation, SUGGEST_OP );
+    }
+
+    /**
+     * Take event and update suggestion for Movie
+     * @param data
+     * @param operation
+     */
+    private void updateSearchForActor(Map<String, String> data, String operation) {
+        processActor(data, groupNameSearch , operation, INDEX_OP );
+    }
+
+    /**
+     *
+     * @param data
+     * @param groupName
+     * @param operation
+     * @param ftsActionType
+     */
+    private void processActor(Map<String, String> data, String groupName, String operation, String  ftsActionType){
+        Map<String, Object> actor = new HashMap<>();
+        actor.put("first_name", data.get("first_name"));
+        String lastName = data.get("last_name");
+        if (lastName == null || lastName.trim().isEmpty()) {
+            lastName = "-";
+        }
+        actor.put("last_name", lastName);
+        actor.put("dob", Integer.parseInt(data.get("dob")));
+        actor.put("actor_id", Integer.parseInt(data.get("actor_id")));
+        actor.put( "full_name",  String.format("%s %s", data.get("first_name"), lastName ));
+
+        if (operation.equals("UPDATE")) {
+            String beforeLastName = data.get("before:last_name");
+            if (beforeLastName == null || beforeLastName.trim().isEmpty()) {
+                beforeLastName = "-";
+            }
+            actor.put("before:last_name", beforeLastName);
+            actor.put("before:dob", Integer.parseInt(data.get("before:dob")));
+            actor.put("before:actor_id", Integer.parseInt(data.get("before:actor_id")));
+            actor.put( "before:full_name",  String.format("%s %s", data.get("before:first_name"), beforeLastName ));
+        }
+
+        // Prepare the indexing call
+        String itemType = "actors";
+        String newValue = null;
+        String oldValue = null;
+        String id = actor.get("actor_id").toString();
+        if (operation.equals("CREATE")) {
+            newValue =  actor.get("full_name").toString();
+        } else if (operation.equals("UPDATE")) {
+            newValue =  actor.get("full_name").toString();
+            oldValue =  actor.get("before:full_name").toString();
+        } else  if (operation.equals("DELETE")) {
+            oldValue =  actor.get("full_name").toString();
+        }
+
+        if ( ftsActionType.equalsIgnoreCase(INDEX_OP) ) {
+            this.indexDocument( itemType, actor, operation);
+        }
+        if ( ftsActionType.equalsIgnoreCase(SUGGEST_OP)) {
+            this.updateAutocomplete(itemType, newValue, oldValue, id);
+        }
+    }
+
 
 }

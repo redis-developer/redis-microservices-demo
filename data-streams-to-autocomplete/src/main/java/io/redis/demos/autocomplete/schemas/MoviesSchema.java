@@ -28,5 +28,5 @@ public class MoviesSchema {
                 .addNumericField(RATING)
                 .addNumericField(VOTES);
     }
-    
+
 }
