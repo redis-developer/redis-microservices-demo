@@ -1,19 +1,25 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <b-jumbotron>
+      <h2>
+      Modernize legazy application with <b>Redis</b> and <b>Microservices</b>.
+      </h2>
+    </b-jumbotron>
+
+    <img alt="Architecture" src="/imgs/overal-archi.png">
+
+    <b-container>
+
+    </b-container>
+
+
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
 
 export default {
   name: 'Home',
-  components: {
-    HelloWorld
-  },
     created() {
     this.$parent.contextualHelp = null;
   },

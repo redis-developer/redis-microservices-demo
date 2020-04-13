@@ -24,6 +24,8 @@
       <router-link to="/aggregations">Aggregations</router-link> |
       <router-link to="/services">Services</router-link>
     </div>
+    
+
     <router-view/>
   </div>
 </template>
@@ -69,5 +71,6 @@
   z-index: 99;
   margin: 5px;
 }
+
 
 </style>
