@@ -62,8 +62,8 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
 
     Future<?> streamProcessingTask;
     private String status = "STOPPED";
-    private boolean suggest = false;
-    private boolean fulltext = true; // TODO Change default
+    private boolean suggest = true;
+    private boolean fulltext = true;
     String groupNameSuggest = null;
     String groupNameSearch = null;
 
