@@ -3,15 +3,26 @@
 
     <h1>Aggregations with RediSearch</h1>
     
+        <b-form @submit="changeSelected" >
+
+    <b-button variant='primary' >View</b-button>
+        </b-form>
+
   </div>
 </template>
 
 <script>
-
 export default {
-  name: "Aggregation",
-  created() {
-        this.$parent.contextualHelp = "Show various RediSearch capabilities";
-  }
+ data () {
+        return {
+        }
+      },
+      methods: {
+        changeSelected (evt) {
+          console.log("TEST")
+          this.selected = true
+        }
+      }
+ 
 };
 </script>

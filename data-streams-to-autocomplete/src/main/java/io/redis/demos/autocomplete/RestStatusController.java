@@ -1,5 +1,6 @@
 package io.redis.demos.autocomplete;
 
+import io.redisearch.AggregationResult;
 import io.redisearch.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -80,6 +81,16 @@ public class RestStatusController {
         result.put("action", "configureFullText");
         Map<String,String> call = redisService.changeSuggest();
         result.putAll(call);
+        return result;
+    }
+
+    @GetMapping("/stats/movies/all")
+    public Map<String,Object> allStats(@RequestParam(name="sort", defaultValue="year")String orderBy) {
+        Map<String,Object> result = new HashMap<>();
+        Map<String,Object> stats = redisService.getMovieByYear(orderBy, 100);
+        result.put("movieByYear", stats);
+        stats = redisService.getMovieByGenre("genre", 100);
+        result.put("movieByGenre", stats);
         return result;
     }
 

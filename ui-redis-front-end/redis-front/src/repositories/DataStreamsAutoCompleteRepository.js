@@ -40,6 +40,9 @@ export default {
     return Repository.get(`${resource}/config/${config}`);
   }, 
 
+  getMovieStats(){
+    return Repository.get(`${resource}/stats/movies/all`);
+  },
 
   getServiceInfo(){
     return resource;

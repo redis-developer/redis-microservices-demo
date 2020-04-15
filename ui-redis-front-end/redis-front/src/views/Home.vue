@@ -1,8 +1,9 @@
 <template>
   <div class="home">
     <b-jumbotron>
+      <h1>Redis Movie Database</h1>
       <h2>
-      Modernize legazy application with <b>Redis</b> and <b>Microservices</b>.
+      Modernize legacy application with <b>Redis</b> and <b>Microservices</b>.
       </h2>
     </b-jumbotron>
 

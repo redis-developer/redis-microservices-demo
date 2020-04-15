@@ -3,10 +3,10 @@ package io.redis.demos.autocomplete;
 import io.redis.demos.autocomplete.schemas.ActorsSchema;
 import io.redis.demos.autocomplete.schemas.KeysPrefix;
 import io.redis.demos.autocomplete.schemas.MoviesSchema;
-import io.redisearch.Document;
-import io.redisearch.Query;
-import io.redisearch.SearchResult;
-import io.redisearch.Suggestion;
+import io.redisearch.*;
+import io.redisearch.aggregation.AggregationBuilder;
+import io.redisearch.aggregation.SortedField;
+import io.redisearch.aggregation.reducers.Reducers;
 import io.redisearch.client.AutoCompleter;
 import io.redisearch.client.Client;
 import io.redisearch.client.SuggestionOptions;
@@ -19,12 +19,15 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Component
@@ -542,8 +545,12 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
         return search(indexName,q, 0, 50);
     }
 
-
-
+    /**
+     *
+     * @param indexName
+     * @param document
+     * @param operation
+     */
     private void indexDocument(String indexName, Map<String,Object> document, String operation) {
 
         String tablePk = "";
@@ -726,5 +733,68 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
         }
     }
 
+    public Map<String,Object> getMovieByYear(String orderBy, Integer count){
+        if (orderBy != null && orderBy.equalsIgnoreCase("year") ) {
+            orderBy = "release_year";
+        } else {
+            orderBy = "sum";
+        }
+        if (count == null || count == 0){  count = 10; }
+        return getMovieStats( "release_year", "Long", orderBy, count );
+    }
+
+
+    public Map<String,Object> getMovieByGenre(String orderBy, Integer count){
+        if (orderBy != null && orderBy.equalsIgnoreCase("genre") ) {
+            orderBy = "genre";
+        } else {
+            orderBy = "sum";
+        }
+        if (count == null || count == 0){  count = 10; }
+        return getMovieStats( "genre", "String", orderBy, count );
+    }
+
+    /**
+     *
+     * @param orderBy
+     * @return
+     */
+    public Map<String,Object> getMovieStats(String groupBy, String groupByType, String orderBy, Integer count){
+        if (count == null || count == 0){  count = 10; }
+
+
+        log.info("get getMovieStats {} order by {}", groupBy,  orderBy);
+        Map<String,Object> result = new HashMap<>();
+        String complexIndexName = SEARCH_INDEX_PREFIX + "movies";
+        Client client = searchClients.get(complexIndexName);
+
+        AggregationBuilder aggregation = new AggregationBuilder("*")
+                .groupBy("@"+ groupBy, Reducers.count().as("sum"))
+                .sortBy(count, SortedField.asc("@"+orderBy));
+
+        AggregationResult aggRresult = client.aggregate(aggregation);
+
+        int resultSize = aggRresult.getResults().size();
+
+        result.put("totalResults",aggRresult.totalResults);
+        result.put("cursorId",aggRresult.getCursorId());
+        result.put( "keyLabel", groupBy );
+        result.put( "valueLabel", "sum" );
+        result.put( "query", aggregation.getArgsString() );
+        List<Map<String, Object>> stats = new ArrayList<>();
+        for (int i = 0; i <  resultSize-1  ; i++) {
+            Map<String, Object> entry =  new HashMap<>();
+
+            if (groupByType.equalsIgnoreCase("Long")) {
+                entry.put("key", Long.toString(aggRresult.getRow(i).getLong(groupBy)));
+            } else if (groupByType.equalsIgnoreCase("String")) {
+                entry.put("key", aggRresult.getRow(i).getString(groupBy));
+            }
+            entry.put("value", aggRresult.getRow(i).getLong("sum"));
+            stats.add(entry);
+        }
+        result.put("results", stats);
+        return result;
+    }
 
 }

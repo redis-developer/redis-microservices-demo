@@ -65,6 +65,12 @@ Vue.use(VueRouter)
     component: () => import('../views/Aggregations.vue')
   },
 
+  {
+    path: '/stats/',
+    name: 'Stats',
+    component: () => import('../views/Statistics.vue')
+  },
+
   ]
 
 const router = new VueRouter({

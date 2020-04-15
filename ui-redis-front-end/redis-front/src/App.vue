@@ -3,7 +3,7 @@
 
 <div style="margin-bottom:10px">
   <b-navbar toggleable="lg" type="dark" variant="dark">
-    <b-navbar-brand to="/" > RMDB</b-navbar-brand>
+    <b-navbar-brand to="/" > RMDb</b-navbar-brand>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
@@ -19,6 +19,7 @@
           <b-dropdown-item to="/search/actors" > <b-icon-people-circle />  Actors</b-dropdown-item>
           <b-dropdown-item to="/autocomplete" >Autocomplete</b-dropdown-item>
         </b-nav-item-dropdown>
+        <b-nav-item  to="/stats" >  <b-icon-graph-up /> Statistics</b-nav-item>
         <b-nav-item>|  </b-nav-item>
         <b-nav-item  to="/services" > <b-icon-cone-striped /> Services  </b-nav-item>
       </b-navbar-nav>
