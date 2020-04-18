@@ -1,0 +1,16 @@
+{
+  "name": "notifications-service-node",
+  "version": "1.0.0",
+  "description": "WebSocket Server for Redis Microservice Demo Application",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "nconf": "^0.10.0",
+    "redis": "^3.0.2",
+    "ws": "^7.2.3"
+  }
+}

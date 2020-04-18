@@ -38,7 +38,19 @@
 
 <router-view />
 
-  
+
+
+
+<b-alert id="notification" 
+  v-if="notif"   
+  variant="info" 
+  :max="dismissSecs"
+  :value="dismissCountDown"
+  dismissible 
+  :show="dismissCountDown"
+  @dismissed="deleteNotification" >
+  Movie <b-link :to="{ name: 'MovieForm', params: { id: notif.id } }">"{{notif.title}}"</b-link> updated...
+</b-alert> 
 
 <div id="sticky" v-if="contextualHelp" >
   <b-button id="popover-target-1">
@@ -57,12 +69,43 @@
 </template>
 
 <script>
+let ws = null;
+
     export default {
         name: 'App',
         data() {
             return {
-                contextualHelp: null,
+              dismissSecs: 5,
+              dismissCountDown: 0,
+              showDismissibleAlert: false,
+              notif : "",
+              contextualHelp: null,
             }
+        },
+        created() {
+
+          try {
+            ws =new WebSocket(`ws://${ location.host}/notifications`);
+            ws.onmessage = ({ data }) => {
+              console.log(data)
+              const event = JSON.parse(data);
+              this.notif = event;
+              this.dismissCountDown = this.dismissSecs
+            };
+          }
+          catch(err){
+            console.log(err);
+          }
+
+
+        },
+        methods : {
+          deleteNotification () {
+            this.notif = null;
+          },        
+          countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown
+          },
         }
     }
 </script>
@@ -98,5 +141,12 @@
   z-index: 99;
  }
 
+
+#notification {
+  position: fixed; 
+  bottom: 5px; 
+  left: 10px;
+  z-index: 99;
+ }
 
 </style>

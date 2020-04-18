@@ -121,6 +121,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
                         }
                         // TODO : add other types/schema & make it dynamic
                     } else {
+                        log.warn(jde.getMessage());
                         throw  jde;
                     }
                 }
@@ -289,22 +290,21 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
 
                 createConsumerGroups(jedis);
 
-                Map.Entry<String, StreamEntryID>[] xReadQueries = (Map.Entry<String, StreamEntryID>[]) new Map.Entry[2];
+                Map.Entry<String, StreamEntryID>[] xReadQueries = (Map.Entry<String, StreamEntryID>[]) new Map.Entry[streamList.size()];
                 Jedis finalJedis = jedis;
                 final int[] streamCtr = { 0 };
 
                 // Prepare read queries for each group
-                streamList.forEach( stream -> {
+                streamList.forEach(stream -> {
                     StreamEntryID streamEtnryId = new StreamEntryID("0-0");
-                    Map.Entry<String, StreamEntryID> queryStream =
-                            new AbstractMap.SimpleImmutableEntry<>( stream, StreamEntryID.UNRECEIVED_ENTRY);
+                    Map.Entry<String, StreamEntryID> queryStream = new AbstractMap.SimpleImmutableEntry<>(stream, StreamEntryID.UNRECEIVED_ENTRY);
                     xReadQueries[streamCtr[0]] = queryStream;
                     streamCtr[0]++;
                 });
 
                 boolean loop = true;
                 try {
-                    while(loop) {
+                    while (loop) {
                         loop = !streamProcessingTask.isCancelled();
 
                         // consume messages for full text
@@ -324,6 +324,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
                                         List<StreamEntry> l = (List) m.getValue();
                                         if (l.size() != 0) {
                                             Map<String, String> data = l.get(0).getFields();
+                                            log.info(">>> {}", data.get("source.table"));
                                             String operation = data.get("source.operation").toUpperCase();
                                             if (data.get("source.table").equalsIgnoreCase("movies")) {
                                                 updateSearchForMovie(data, operation);
@@ -387,7 +388,8 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
                                         TimeUnit.MILLISECONDS.sleep(100);
                                     } else {
                                         TimeUnit.MILLISECONDS.sleep(500);
-                                    }                                } catch (InterruptedException e1) {
+                                    }
+                                } catch (InterruptedException e1) {
                                 }
                             }
                         }
@@ -396,6 +398,8 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
                 } catch (JedisDataException jde) {
                     log.warn( jde.getMessage() );
                 }
+            } catch (Exception e) {
+                log.warn( e.getMessage() );
             } finally {
                 if (jedis != null) {
                     jedis.close();
@@ -553,11 +557,14 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
      */
     private void indexDocument(String indexName, Map<String,Object> document, String operation) {
 
+        // TODO move this out
         String tablePk = "";
         if (indexName.equalsIgnoreCase("movies")) {
             tablePk = "movie_id";
         } else if (indexName.equalsIgnoreCase("actors")) {
             tablePk = "actor_id";
+        } else if (indexName.equalsIgnoreCase("courses")) {
+            tablePk = "_id";
         }
 
         if (fulltext) {
