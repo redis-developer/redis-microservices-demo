@@ -27,6 +27,15 @@ export default {
     return Repository.get(`${resource}/stop`);
   }, 
 
+  getRatings(id, withCache) {
+    let cache = 0;
+    if (withCache) {
+      cache=1;
+    }
+    return Repository.get(`${resource}/ratings/${id}?cache=${cache}`);
+  }, 
+
+
   getServiceInfo(){
     return resource;
   }

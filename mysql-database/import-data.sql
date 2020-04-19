@@ -113,7 +113,7 @@ CREATE TABLE movies (
   plot TEXT,
   poster VARCHAR(255),
   imdb_id VARCHAR(20)
- ) AUTO_INCREMENT=1200;
+ ) AUTO_INCREMENT=2000;
 
 
 CREATE TABLE movies_actors (
@@ -1463,10 +1463,10 @@ VALUES (1,"Chris", "Pratt", 1979),
 
 
  INSERT INTO movies
- VALUES (1,"Guardians of the Galaxy", "Action",704613, 8.1, 2014,"A group of intergalactic criminals must pull together to stop a fanatical warrior with plans to purge the universe.","https://m.media-amazon.com/images/M/MV5BMTAwMjU5OTgxNjZeQTJeQWpwZ15BbWU4MDUxNDYxODEx._V1_SX300.jpg",null),
-        (2,"Interstellar", "Adventure",961763, 8.6, 2014,"A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.","https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",null),
-        (3,"The Grand Budapest Hotel", "Adventure",492158, 8.1, 2014,"A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.", "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg",null),
-        (4,"Gone Girl", "Crime",589116, 8.1, 2014,null, null,null),
+ VALUES (1,"Guardians of the Galaxy", "Action",704613, 8.1, 2014,"A group of intergalactic criminals must pull together to stop a fanatical warrior with plans to purge the universe.","https://m.media-amazon.com/images/M/MV5BMTAwMjU5OTgxNjZeQTJeQWpwZ15BbWU4MDUxNDYxODEx._V1_SX300.jpg","tt2015381"),
+        (2,"Interstellar", "Adventure",961763, 8.6, 2014,"A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.","https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg","tt0816692"),
+        (3,"The Grand Budapest Hotel", "Adventure",492158, 8.1, 2014,"A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.", "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg","tt2278388"),
+        (4,"Gone Girl", "Crime",589116, 8.1, 2014,"With his wife's disappearance having become the focus of an intense media circus, a man sees the spotlight turned on him when it's suspected that he may not be innocent.", "https://m.media-amazon.com/images/M/MV5BMTk0MDQ3MzAzOV5BMl5BanBnXkFtZTgwNzU1NzE3MjE@._V1_UX182_CR0,0,182,268_AL_.jpg","tt2267998"),
         (5,"The Imitation Game", "Biography",489175, 8.1, 2014,null, null,null),
         (6,"John Wick", "Action",503014, 7.4, 2014, "An ex-hit-man comes out of retirement to track down the gangsters that killed his dog and took everything from him.", "https://m.media-amazon.com/images/M/MV5BMTU2NjA1ODgzMF5BMl5BanBnXkFtZTgwMTM2MTI4MjE@._V1_UX182_CR0,0,182,268_AL_.jpg","tt2911666"),
         (7,"X-Men: Days of Future Past", "Action",524078, 8.0, 2014,null, null,null),
@@ -1508,7 +1508,7 @@ VALUES (1,"Chris", "Pratt", 1979),
         (44,"Boyhood", "Drama",272604, 7.9, 2014,null, null,null),
         (45,"American Sniper", "Action",333228, 7.3, 2014,null, null,null),
         (46,"Big Hero 6", "Animation",288143, 7.9, 2014,null, null,null),
-        (47,"The Hunger Games: Mockingjay - Part 1", "Adventure",313261, 6.7, 2014,null, null,null),
+        (47,"The Hunger Games: Mockingjay - Part 1", "Adventure",313261, 6.7, 2014,"Katniss Everdeen is in District 13 after she shatters the games forever. Under the leadership of President Coin and the advice of her trusted friends, Katniss spreads her wings as she fights to save Peeta and a nation moved by her courage.", "https://m.media-amazon.com/images/M/MV5BMTcxNDI2NDAzNl5BMl5BanBnXkFtZTgwODM3MTc2MjE@._V1_UX182_CR0,0,182,268_AL_.jpg","tt1951265"),
         (48,"Noah", "Action",203170, 5.8, 2014,null, null,null),
         (49,"Predestination", "Drama",172521, 7.4, 2014,null, null,null),
         (50,"Unbroken", "Biography",106707, 7.2, 2014,null, null,null),
@@ -1581,7 +1581,7 @@ VALUES (1,"Chris", "Pratt", 1979),
         (118,"The Lobster", "Comedy",90934, 7.1, 2015,null, null,null),
         (119,"Mr. Right", "Action",22752, 6.3, 2015,null, null,null),
         (120,"Mission: Impossible - Rogue Nation", "Action",241599, 7.4, 2015,null, null,null),
-        (121,"The Hunger Games: Mockingjay - Part 2", "Adventure",179028, 6.6, 2015,null, null,null),
+        (121,"The Hunger Games: Mockingjay - Part 2", "Adventure",179028, 6.6, 2015,"Katniss and a team of rebels from District 13 prepare for the final battle that will decide the fate of Panem.", "https://m.media-amazon.com/images/M/MV5BNjQzNDI2NTU1Ml5BMl5BanBnXkFtZTgwNTAyMDQ5NjE@._V1_UX182_CR0,0,182,268_AL_.jpg","tt1951266"),
         (122,"P.S. I Love You", "Drama",170878, 7.1, 2007,null, null,null),
         (123,"Black Mass", "Biography",123475, 7.0, 2015,null, null,null),
         (124,"In the Heart of the Sea", "Action",79623, 6.9, 2015,null, null,null),
@@ -2309,7 +2309,6 @@ VALUES (1,"Chris", "Pratt", 1979),
         (1026, "Canada: A People's History", "Documentary" , 286, 8.7, 2000 , "A dramatized comprehensive survey of the history of Canada.", "https://m.media-amazon.com/images/M/MV5BMTgzNTUzMjIwMl5BMl5BanBnXkFtZTcwMzQ1NzQyMQ@@._V1_SX300.jpg", "tt0264228" ),
         (1027, "World Sex Tour 24: Canada", "Adult" , 12, 8.3, 2001 , "N/A", "N/A", "tt0303232" ),
         (1028, "An American in Canada", "Comedy" , 168, 3.1, 2002 , "N/A", "N/A", "tt0306275" ),
-        (1029, "Comedy Night in Canada", "Comedy" , 40, 5.9, 2003 , "N/A", "N/A", "tt0423997" ),
         (1030, "Canada (2004)", "Short" , 16, 7.1, 2004 , "Set in the early 50's in the south of Holland, young Teun does not understand his mother's death. In this time of major immigration to the promised land of Canada, he thinks they are all going to take this journey.", "https://m.media-amazon.com/images/M/MV5BMTc1NTc2NTAxMV5BMl5BanBnXkFtZTgwNjA3MDA2MDE@._V1_SX300.jpg", "tt0478852" ),
         (1031, "Canada på tvers med Lars Monsen", "Documentary" , 244, 8.9, 2005 , "Lars Monsen travels across Canada, encountering wildlife around every corner.", "https://m.media-amazon.com/images/M/MV5BODE4MDhiOGEtZDgwOC00NzE4LThkMTktOGYyNDZlMjlmYjU4XkEyXkFqcGdeQXVyNTg5Njk5Njk@._V1_SX300.jpg", "tt0802961" ),
         (1032, "Canada Russia '72", "Drama" , 310, 7.6, 2006 , "CANADA RUSSIA '72 is shot in a fluid documentary style that effectively captures all the immediacy of the '72 hockey summit's intrigues.", "https://m.media-amazon.com/images/M/MV5BMTI0OTUzNDkxM15BMl5BanBnXkFtZTcwMzMwNzkzMQ@@._V1_SX300.jpg", "tt0484098" ),
@@ -2388,7 +2387,9 @@ VALUES (1,"Chris", "Pratt", 1979),
         (1127, "Messalina, Empress of Rome", "Adventure" , 156, 4.0, 1977 , "N/A", "https://m.media-amazon.com/images/M/MV5BNjk1NjM4NTg5M15BMl5BanBnXkFtZTcwMjk2NTIyMQ@@._V1_SY264_CR30178264_.jpg", "tt0081155" ),
         (1128, "Rome '78", "Drama" , 10, 6.9, 1978 , "N/A", "N/A", "tt1002643" ),
         (1130, "Centurians of Rome", "Adult" , 43, 8.2, 1981 , "N/A", "N/A", "tt0285474" ),
-        (1132, "The Emperor of Rome", "Drama" , 106, 7.1, 1988 , "N/A", "https://m.media-amazon.com/images/M/MV5BMGM2M2YzYTgtN2E5MC00ZGVkLWJiOWYtNzYzMDEyY2EzNTc1XkEyXkFqcGdeQXVyMzU0NzkwMDg@._V1_SX300.jpg", "tt0210750" )
+        (1132, "The Emperor of Rome", "Drama" , 106, 7.1, 1988 , "N/A", "https://m.media-amazon.com/images/M/MV5BMGM2M2YzYTgtN2E5MC00ZGVkLWJiOWYtNzYzMDEyY2EzNTc1XkEyXkFqcGdeQXVyMzU0NzkwMDg@._V1_SX300.jpg", "tt0210750" ),
+        (1133, "Bastards", "Drama", 78, 6.4, 1999,"Two teenaged American-Asian brothers leave Vietnam and head for the USA to find their father and pursue the American dream.","https://m.media-amazon.com/images/M/MV5BMTYxMzI4MzE3NF5BMl5BanBnXkFtZTcwMTY0MDIyMQ@@._V1_UX182_CR0,0,182,268_AL_.jpg", "tt0139882" ),
+        (1134, "The Insider", "Biography", 154624, 7.8, 1999, "A research chemist comes under personal and professional attack when he decides to appear in a 60 Minutes exposé on Big Tobacco.", "https://m.media-amazon.com/images/M/MV5BODg0YjAzNDQtOGFkMi00Yzk2LTg1NzYtYTNjY2UwZTM2ZDdkL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY268_CR2,0,182,268_AL_.jpg", "tt0140352")
         ;
 
 

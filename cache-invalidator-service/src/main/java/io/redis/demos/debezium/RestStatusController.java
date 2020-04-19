@@ -1,11 +1,9 @@
 package io.redis.demos.debezium;
 
 import io.redis.demos.debezium.listener.CDCEventListener;
+import io.redis.demos.debezium.service.WebServiceCachingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -22,7 +20,8 @@ public class RestStatusController {
     @Inject
     CDCEventListener cdcEventListener;
 
-    @CrossOrigin(origins = "*")
+    @Inject WebServiceCachingService webServiceCachingService;
+
     @GetMapping("/status")
     public Map<String,String> status() {
         Map<String,String> result = new HashMap<>();
@@ -32,7 +31,6 @@ public class RestStatusController {
         return result;
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/start")
     public Map<String,String> start() throws IOException {
         Map<String,String> result = new HashMap<>();
@@ -42,7 +40,6 @@ public class RestStatusController {
         return result;
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/stop")
     public Map<String,String> stop() throws IOException {
         Map<String,String> result = new HashMap<>();
@@ -51,5 +48,19 @@ public class RestStatusController {
         result.put("action", "stop");
         return result;
     }
+
+
+    @GetMapping("/ratings/{id}")
+    public Map<String,Object> getRatings(
+            @PathVariable(name = "id") String imdbId,
+            @RequestParam(name="cache", defaultValue = "1") String withCache) throws IOException {
+        Map<String,Object> result = new HashMap<>();
+
+        Map<String,String> resultWsCall = webServiceCachingService.getRatings(imdbId, withCache.equals("1"));
+        result.putAll(resultWsCall);
+
+        return result;
+    }
+
 
 }

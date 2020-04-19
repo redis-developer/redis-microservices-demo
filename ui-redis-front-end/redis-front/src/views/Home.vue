@@ -7,7 +7,23 @@
       </h2>
     </b-jumbotron>
 
-    <img alt="Architecture" src="/imgs/overal-archi.png">
+
+
+<div>
+  <b-card no-body>
+    <b-tabs card>
+      <b-tab title="Overall Architecture" active>
+        <b-card-text>
+              <img alt="Architecture" src="/imgs/overal-archi.png">
+        </b-card-text>
+      </b-tab>
+      <b-tab title="Notifications">
+              <img alt="Gears to Pub Sub" src="/imgs/gears-pubsub.png">
+      </b-tab>
+    </b-tabs>
+  </b-card>
+</div>
+
 
     <b-container>
 

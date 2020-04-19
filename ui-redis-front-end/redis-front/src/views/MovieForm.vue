@@ -65,6 +65,21 @@
           &nbsp;
           <b-button type="reset" variant="">Reset</b-button>
 
+          <hr/>
+
+          <div v-if="ratings" >
+          <b-icon-reply class="large" @click="getRatings" />  -  IMDB : {{ratings["Internet Movie Database"]}}  - Rotten Tomatoes : {{ratings["Rotten Tomatoes"]}} - Metacritic : {{ratings["Metacritic"]}}
+          <template>
+  <div>
+  
+    <b-form-checkbox v-model="callWithCache" name="check-button" switch>
+        
+      Using Redis Cache  ( {{ratings.elapsedTimeMs}} ms)
+    </b-form-checkbox>
+  </div>
+</template>
+          </div>
+
     </b-col>
     <b-col>
       <div>
@@ -105,6 +120,7 @@
 <script>
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
 const RDBMSRepository = RepositoryFactory.get('rdbmsRepository')
+const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorRepository')
 
 export default {
   name: "MovieForm",
@@ -119,7 +135,9 @@ export default {
         votes : null,
         rating : null,
         release_year : null,
+        callWithCache : false,
       },
+      ratings : {},
       actors: null,
       show: true,
       msg: null,
@@ -138,6 +156,7 @@ export default {
       this.movie = data;
       data = await RDBMSRepository.findMovieActors( this.$route.params.id)
       this.actors = data.data;
+      this.getRatings();
       this.isLoading = false;
     },
     async onSubmit(evt) {
@@ -148,6 +167,14 @@ export default {
     onReset(evt) {
       evt.preventDefault()
     },
+   async getRatings() {
+      // Get ratings from WS call
+      if (this.movie.imdb_id) {
+        this.ratings = undefined;
+        const {data} = await CacheInvalidatorRepository.getRatings(this.movie.imdb_id, this.callWithCache);
+        this.ratings = data;
+      }
+    }
   },
   computed: {
     computedRecords () {
