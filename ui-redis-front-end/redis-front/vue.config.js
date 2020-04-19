@@ -59,12 +59,7 @@ module.exports = {
                 target: 'http://localhost:8083//api/1.0/data-streams-to-graph',
                 changeOrigin: true,
                 pathRewrite: {"^/api/graph" : "/"}          
-            },
-            '^/notifications': {
-                target: 'http://localhost:8888/',
-                ws: true,
-                changeOrigin: true,
-                },    
+            }  
         }
     }
 }

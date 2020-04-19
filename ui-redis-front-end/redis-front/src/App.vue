@@ -85,7 +85,8 @@ let ws = null;
         created() {
 
           try {
-            ws =new WebSocket(`ws://${ location.host}/notifications`);
+            ///ws =new WebSocket(`ws://${ location.host}/notifications`);
+            ws =new WebSocket(`ws://localhost:8888/`);
             ws.onmessage = ({ data }) => {
               console.log(data)
               const event = JSON.parse(data);
