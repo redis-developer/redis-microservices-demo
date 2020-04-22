@@ -24,6 +24,17 @@ Todo:
 
 ## Build and Run with Docker
 
+
+If you want to use the Web Service cache demo that call the OMDB API you must:
+
+1. Generate a key here: [http://www.omdbapi.com/](http://www.omdbapi.com/)
+
+2. Put this key in the `cache-invalidator-service/src/main/resources/application-prod.properties` (see last property)
+
+Then
+
+
+
 ```
 $ mvn clean package
 
