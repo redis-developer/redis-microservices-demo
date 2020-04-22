@@ -3,7 +3,7 @@
 
 <div style="margin-bottom:10px">
   <b-navbar toggleable="lg" type="dark" variant="dark">
-    <b-navbar-brand to="/" > RMDb</b-navbar-brand>
+    <b-navbar-brand style="margin-left:90px" to="/" > RMDb</b-navbar-brand>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
@@ -64,6 +64,8 @@
     <span v-html="contextualHelp"></span>
   </b-popover>
 </div>
+
+<a href="https://github.com/tgrall/redis-microservices-demo"><img src="/imgs/forkme_left_red.svg" style="position:absolute;top:0;left:0;" alt="Fork me on GitHub"></a>
 
   </div>
 </template>
