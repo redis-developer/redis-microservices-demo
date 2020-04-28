@@ -35,6 +35,13 @@ export default {
     return Repository.get(`${resource}/ratings/${id}?cache=${cache}`);
   }, 
 
+  saveOmdbApiKeyRatings(key) {
+    return Repository.post(`${resource}/configuration/omdb_api?key=${key}`);
+  }, 
+
+  getOmdbApiKeyRatings() {
+    return Repository.get(`${resource}/configuration/omdb_api`);
+  }, 
 
   getServiceInfo(){
     return resource;

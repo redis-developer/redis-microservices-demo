@@ -68,16 +68,17 @@
           <hr/>
 
           <div v-if="ratings" >
-          <b-icon-reply class="large" @click="getRatings" />  -  IMDB : {{ratings["Internet Movie Database"]}}  - Rotten Tomatoes : {{ratings["Rotten Tomatoes"]}} - Metacritic : {{ratings["Metacritic"]}}
+          <b-icon-reply class="large" @click="getRatings" />  
+            -  IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
+            - Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
+            - Metacritic : <span v-html='ratings["Metacritic"]' />
           <template>
-  <div>
-  
-    <b-form-checkbox v-model="callWithCache" name="check-button" switch>
-        
-      Using Redis Cache  ( {{ratings.elapsedTimeMs}} ms)
-    </b-form-checkbox>
-  </div>
-</template>
+            <div>
+            <b-form-checkbox v-model="callWithCache" name="check-button" switch>  
+              Redis Cache  ( {{ratings.elapsedTimeMs}} ms)
+            </b-form-checkbox>
+            </div>
+          </template>
           </div>
 
     </b-col>

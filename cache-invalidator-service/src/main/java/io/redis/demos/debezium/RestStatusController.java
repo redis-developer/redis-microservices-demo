@@ -63,4 +63,20 @@ public class RestStatusController {
     }
 
 
+    @PostMapping("/configuration/omdb_api")
+    public Map<String,String> saveOmdbApiKey(@RequestParam(name="key") String key) throws IOException {
+        Map<String,String> result = new HashMap<>();
+        webServiceCachingService.saveOMDBAPIKey(key);
+        result.put("status", "OK");
+        result.put("msg", "OMDB API Key successfully saved");
+        return result;
+    }
+
+    @GetMapping("/configuration/omdb_api")
+    public Map<String,String> getOmdbApiKey() throws IOException {
+        Map<String,String> result = new HashMap<>();
+        result.put("key", webServiceCachingService.OMDB_API_KEY);
+        result.put("value", webServiceCachingService.getOMDBAPIKey());
+        return result;
+    }
 }

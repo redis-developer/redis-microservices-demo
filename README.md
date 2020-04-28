@@ -14,12 +14,6 @@ This Spring Boot Application is a service that use Debezium in an embedded mode 
 Depending of the configuration, the table content is automatically cached as a hash or just invalidated based on the table primary key.
 
 
-### 2. Extend your Relational Model with Redis Modules
-
-Todo:
-
-* show how to integrate RedisGraph and Search to enrich RDBMS application
-
 
 
 ## Build and Run with Docker
@@ -27,11 +21,9 @@ Todo:
 
 If you want to use the Web Service cache demo that call the OMDB API you must:
 
-1. Generate a key here: [http://www.omdbapi.com/](http://www.omdbapi.com/)
+1. Generate a key here: [http://www.omdbapi.com/](http://www.omdbapi.com/) *do not forge to activate it, you will receive an email)
 
-2. Put this key in the `cache-invalidator-service/src/main/resources/application-prod.properties` (see last property)
-
-Then
+2. When the applications is ready go to the "Services" page and enter the key in the configuration screen, this will save the key in a Redis Hash (lool at `ms:config` during the demo)
 
 
 
