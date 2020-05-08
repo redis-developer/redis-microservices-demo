@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/1.0/data-mysql-api/movies")
+@RequestMapping("/api/1.0/sql-rest-api/movies")
 @RestController
 public class MoviesAPIController {
 

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sql-data-generator</artifactId>
+    <artifactId>sql-rest-api</artifactId>
 
     <dependencies>
         <!-- MySQL JDBC driver -->

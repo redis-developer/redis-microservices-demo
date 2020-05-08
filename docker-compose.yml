@@ -49,9 +49,9 @@ services:
       - mysql-debezium-service
       - redis-service
 
-  sql-legacy-service:
+  sql-rest-api:
     build:
-      context: ./sql-data-generator
+      context: ./sql-rest-api
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
@@ -113,7 +113,7 @@ services:
       - streams-to-redisearch-service
       - db-to-streams-service
       - caching-service
-      - sql-legacy-service
+      - sql-rest-api
     restart: always
 
 networks:

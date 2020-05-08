@@ -8,7 +8,7 @@ module.exports = {
             pathRewrite: {"^/api/fulltext" : "/"}          
             },
             '^/api/legacy': {
-                target: 'http://localhost:8081/api/1.0/data-mysql-api',
+                target: 'http://localhost:8081/api/1.0/sql-rest-api',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {"^/api/legacy" : "/"}          

@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/1.0/data-mysql-api/")
+@RequestMapping("/api/1.0/sql-rest-api/")
 @RestController
 public class RestStatusController {
 

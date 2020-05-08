@@ -17,7 +17,7 @@
     <modules>
         <module>caching-service</module>
         <module>db-to-streams-service</module>
-        <module>sql-data-generator</module>
+        <module>sql-rest-api</module>
         <module>streams-to-redisearch-service</module>
         <module>streams-to-redisgraph-service</module>
     </modules>
