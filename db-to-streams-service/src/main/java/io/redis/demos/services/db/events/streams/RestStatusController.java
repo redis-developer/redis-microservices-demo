@@ -1,7 +1,7 @@
-package io.redis.demos.debezium.streams;
+package io.redis.demos.services.db.events.streams;
 
 
-import io.redis.demos.debezium.streams.listener.CDCEventListener;
+import io.redis.demos.services.db.events.streams.listener.CDCEventListener;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/1.0/data-streams-producer/")
+@RequestMapping("/api/1.0/db-to-streams-service/")
 @CrossOrigin("*")
 @org.springframework.context.annotation.Configuration
 public class RestStatusController {

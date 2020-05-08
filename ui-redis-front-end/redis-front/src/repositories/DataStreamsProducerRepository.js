@@ -3,7 +3,7 @@ import Repository from "./Repository";
 // CHeck proxy config
 const baseDomain = "";
 const baseURL = `${baseDomain}`;
-const resource = baseURL + "/api/data-to-streams";
+const resource = baseURL + "/api/db-to-streams-service";
 export default {
 
   async status() {

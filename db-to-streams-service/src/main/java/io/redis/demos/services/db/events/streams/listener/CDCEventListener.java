@@ -1,10 +1,10 @@
-package io.redis.demos.debezium.streams.listener;
+package io.redis.demos.services.db.events.streams.listener;
 
 import io.debezium.config.Configuration;
 import io.debezium.data.Envelope;
 import io.debezium.embedded.Connect;
 import io.debezium.engine.DebeziumEngine;
-import io.redis.demos.debezium.streams.service.RedisStreamsDebeziumProducer;
+import io.redis.demos.services.db.events.streams.service.RedisStreamsDebeziumProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.connect.data.Field;

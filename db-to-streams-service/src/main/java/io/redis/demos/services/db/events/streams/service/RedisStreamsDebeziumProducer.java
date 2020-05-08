@@ -1,10 +1,8 @@
-package io.redis.demos.debezium.streams.service;
+package io.redis.demos.services.db.events.streams.service;
 
-import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -13,12 +11,9 @@ import redis.clients.jedis.StreamEntryID;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>data-streams-publisher</artifactId>
+    <artifactId>db-to-streams-service</artifactId>
 
     <dependencies>
         <!-- Debezium Engine & API (embedded) -->

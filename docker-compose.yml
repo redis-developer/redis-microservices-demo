@@ -23,9 +23,9 @@ services:
       - redis-microservices-network
     restart: always
 
-  cdc-to-redis-streams-service:
+  db-to-streams-service:
     build:
-      context: ./data-streams-publisher
+      context: ./db-to-streams-service
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
@@ -109,9 +109,9 @@ services:
     depends_on:
       - redis-service
       - mysql-debezium-service
-      - cdc-to-redis-streams-service
       - streams-to-autocomplete-service
       - streams-to-graph-service
+      - db-to-streams-service
       - caching-service
       - sql-legacy-service
     restart: always

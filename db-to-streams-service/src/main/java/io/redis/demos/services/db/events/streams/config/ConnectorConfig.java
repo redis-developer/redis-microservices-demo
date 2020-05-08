@@ -1,4 +1,4 @@
-package io.redis.demos.debezium.streams.config;
+package io.redis.demos.services.db.events.streams.config;
 
 
 import org.springframework.beans.factory.annotation.Value;
