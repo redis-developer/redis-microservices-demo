@@ -30,7 +30,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Component
-public class RediStreamsToAutocomplete extends KeysPrefix {
+public class StreamsToRediSearch extends KeysPrefix {
 
     private final static String SUGGEST_OP = "SUGG";
     private final static String INDEX_OP = "IDX";
@@ -51,13 +51,6 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
     @Value("${redis.consumer}")
     private String consumer;
 
-    // Autocomplete (keys)
-    //@Value("${redis.autocomplete.key}")
-    //private List<String> autoCompleteKeys;
-
-    // Search (indices)
-    //@Value("${redis.search.index}")
-    //private List<String> searchIndexKey;
 
     Future<?> streamProcessingTask;
     private String status = "STOPPED";
@@ -72,8 +65,8 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
     private Map<String, Client> searchClients = new HashMap<>();
 
 
-    public RediStreamsToAutocomplete() {
-        log.info(" === RediStreamsToAutocomplete Started : Waiting for user action  ===");
+    public StreamsToRediSearch() {
+        log.info(" === StreamsToRediSearch Started : Waiting for user action  ===");
     }
 
     @PostConstruct

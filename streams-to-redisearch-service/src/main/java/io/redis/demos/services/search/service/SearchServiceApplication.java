@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-public class AutocompleteSyncApplication {
+public class SearchServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AutocompleteSyncApplication.class, args);
+        SpringApplication.run(SearchServiceApplication.class, args);
     }
 
 

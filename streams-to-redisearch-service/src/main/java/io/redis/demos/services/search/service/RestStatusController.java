@@ -12,8 +12,7 @@ import java.util.*;
 @RestController
 public class RestStatusController {
 
-    @Inject
-    RediStreamsToAutocomplete redisService;
+    @Inject StreamsToRediSearch redisService;
 
     @GetMapping("/{object}/autocomplete")
     public List<Map<String,Object>> autoComplete(@PathVariable(name = "object")String object,   @RequestParam(name="q")String term) {
@@ -29,7 +28,7 @@ public class RestStatusController {
     @GetMapping("/status")
     public Map<String,String> status() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "AutocompleteSyncApplication");
+        result.put("service", "SearchServiceApplication");
         result.put("status", redisService.getState());
         result.put("suggest", String.valueOf(redisService.isSuggest()));
         result.put("fulltext", String.valueOf(redisService.isFulltext()));
@@ -40,7 +39,7 @@ public class RestStatusController {
     @GetMapping("/start")
     public Map<String,String> start() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "AutocompleteSyncApplication");
+        result.put("service", "SearchServiceApplication");
         result.put("action", "start");
         Map<String,String> call = redisService.processStream();
         result.putAll(call);
@@ -50,7 +49,7 @@ public class RestStatusController {
     @GetMapping("/stop")
     public Map<String,String> stop() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "AutocompleteSyncApplication");
+        result.put("service", "SearchServiceApplication");
         result.put("action", "stop");
         Map<String,String> call = redisService.stopProcessStream();
         result.putAll(call);
@@ -65,7 +64,7 @@ public class RestStatusController {
     @GetMapping("/config/fulltext")
     public Map<String,String> configureFullText() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "AutocompleteSyncApplication");
+        result.put("service", "SearchServiceApplication");
         result.put("action", "configureFullText");
         Map<String,String> call = redisService.changeFullText();
         result.putAll(call);
@@ -75,7 +74,7 @@ public class RestStatusController {
     @GetMapping("/config/autocomplete")
     public Map<String,String> configureAutocomplete() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "AutocompleteSyncApplication");
+        result.put("service", "SearchServiceApplication");
         result.put("action", "configureFullText");
         Map<String,String> call = redisService.changeSuggest();
         result.putAll(call);
