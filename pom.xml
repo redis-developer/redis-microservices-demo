@@ -18,8 +18,8 @@
         <module>caching-service</module>
         <module>db-to-streams-service</module>
         <module>sql-data-generator</module>
-        <module>data-streams-to-graph</module>
         <module>streams-to-redisearch-service</module>
+        <module>streams-to-redisgraph-service</module>
     </modules>
 
     <properties>

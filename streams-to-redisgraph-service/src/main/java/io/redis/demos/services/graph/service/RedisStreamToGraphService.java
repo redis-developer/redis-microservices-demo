@@ -1,4 +1,4 @@
-package io.redis.demos.debezium.graph;
+package io.redis.demos.services.graph.service;
 
 import com.redislabs.redisgraph.ResultSet;
 import com.redislabs.redisgraph.impl.api.RedisGraph;

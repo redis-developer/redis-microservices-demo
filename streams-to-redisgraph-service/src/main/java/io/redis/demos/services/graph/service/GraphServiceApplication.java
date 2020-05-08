@@ -1,4 +1,4 @@
-package io.redis.demos.debezium.graph;
+package io.redis.demos.services.graph.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -7,10 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-public class SyncGraphApplication implements CommandLineRunner {
+public class GraphServiceApplication implements CommandLineRunner {
 
     public static void main(String[] args) {
-        SpringApplication.run(SyncGraphApplication.class, args);
+        SpringApplication.run(GraphServiceApplication.class, args);
     }
 
     @Override

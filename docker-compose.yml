@@ -36,9 +36,9 @@ services:
       - mysql-debezium-service
       - redis-service
 
-  streams-to-graph-service:
+  streams-to-redisgraph-service:
     build:
-      context: ./data-streams-to-graph
+      context: ./streams-to-redisgraph-service
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
@@ -109,7 +109,7 @@ services:
     depends_on:
       - redis-service
       - mysql-debezium-service
-      - streams-to-graph-service
+      - streams-to-redisgraph-service
       - streams-to-redisearch-service
       - db-to-streams-service
       - caching-service

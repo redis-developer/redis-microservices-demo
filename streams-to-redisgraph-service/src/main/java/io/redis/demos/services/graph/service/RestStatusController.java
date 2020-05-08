@@ -1,4 +1,4 @@
-package io.redis.demos.debezium.graph;
+package io.redis.demos.services.graph.service;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Slf4j
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/1.0/data-streams-to-graph/")
+@RequestMapping("/api/1.0/graph-service/")
 @RestController
 public class RestStatusController {
 
@@ -22,7 +22,7 @@ public class RestStatusController {
 
         Map<String,String> result = new HashMap<>();
 
-        result.put("service", "SyncGraphApplication");
+        result.put("service", "GraphServiceApplication");
         result.put("status", redisService.getState());
         result.put("version", "1.0");
 
@@ -32,7 +32,7 @@ public class RestStatusController {
     @GetMapping("/start")
     public Map<String,String> start() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "SyncGraphApplication");
+        result.put("service", "GraphServiceApplication");
         result.put("action", "start");
         Map<String,String> call = redisService.processStream();
         result.putAll(call);
@@ -42,7 +42,7 @@ public class RestStatusController {
     @GetMapping("/stop")
     public Map<String,String> stop() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "SyncGraphApplication");
+        result.put("service", "GraphServiceApplication");
         result.put("action", "stop");
         Map<String,String> call = redisService.stopProcessStream();
         result.putAll(call);
@@ -52,7 +52,7 @@ public class RestStatusController {
     @GetMapping("/relationship/{type}/{id}")
     public Map<String,String> findRelationshipsFromRDBMS(@PathVariable String type, @PathVariable int id) {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "SyncGraphApplication");
+        result.put("service", "GraphServiceApplication");
         result.put("action", "Refresh Relationships");
         redisService.createRelationFromMySQL(type, id);
         return result;

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>data-streams-to-graph</artifactId>
+    <artifactId>streams-to-redisgraph-service</artifactId>
 
     <dependencies>
 

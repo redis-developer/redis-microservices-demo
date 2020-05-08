@@ -26,7 +26,7 @@ module.exports = {
                 pathRewrite: {"^/api/db-to-streams-service" : "/"}          
             },        
             '^/api/graph': {
-                target: 'http://localhost:8083//api/1.0/data-streams-to-graph',
+                target: 'http://localhost:8083//api/1.0/graph-service',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {"^/api/graph" : "/"}          
