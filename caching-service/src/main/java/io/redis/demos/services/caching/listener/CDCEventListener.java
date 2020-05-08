@@ -15,35 +15,31 @@
  *
  */
 
-package io.redis.demos.debezium.listener;
+package io.redis.demos.services.caching.listener;
 
 import io.debezium.config.Configuration;
 import io.debezium.data.Envelope.Operation;
 import static io.debezium.data.Envelope.FieldName.*;
 
 import io.debezium.embedded.Connect;
-import io.debezium.embedded.EmbeddedEngine;
 import io.debezium.engine.DebeziumEngine;
-import io.redis.demos.debezium.service.RedisCacheService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import io.redis.demos.services.caching.service.RedisCacheService;
 
 import static java.util.stream.Collectors.toMap;
 

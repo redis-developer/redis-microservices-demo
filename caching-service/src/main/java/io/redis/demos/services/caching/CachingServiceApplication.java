@@ -15,7 +15,7 @@
  *
  */
 
-package io.redis.demos.debezium;
+package io.redis.demos.services.caching;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;

@@ -15,7 +15,7 @@
  *
  */
 
-package io.redis.demos.debezium.config;
+package io.redis.demos.services.caching.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

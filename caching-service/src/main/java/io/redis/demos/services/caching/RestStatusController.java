@@ -1,7 +1,7 @@
-package io.redis.demos.debezium;
+package io.redis.demos.services.caching;
 
-import io.redis.demos.debezium.listener.CDCEventListener;
-import io.redis.demos.debezium.service.WebServiceCachingService;
+import io.redis.demos.services.caching.listener.CDCEventListener;
+import io.redis.demos.services.caching.service.WebServiceCachingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

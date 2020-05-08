@@ -1,4 +1,4 @@
-package io.redis.demos.debezium.service;
+package io.redis.demos.services.caching.service;
 
 import io.debezium.data.Envelope.Operation;
 import lombok.extern.slf4j.Slf4j;
