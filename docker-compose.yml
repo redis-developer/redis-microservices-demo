@@ -74,9 +74,9 @@ services:
       - redis-service
     restart: always
 
-  streams-to-autocomplete-service:
+  streams-to-redisearch-service:
     build:
-      context: ./data-streams-to-autocomplete
+      context: ./streams-to-redisearch-service
       dockerfile: Dockerfile
     ports:
       - "8085:8085"
@@ -109,8 +109,8 @@ services:
     depends_on:
       - redis-service
       - mysql-debezium-service
-      - streams-to-autocomplete-service
       - streams-to-graph-service
+      - streams-to-redisearch-service
       - db-to-streams-service
       - caching-service
       - sql-legacy-service

@@ -2,7 +2,7 @@ module.exports = {
     devServer: {
         proxy: {
             '^/api/fulltext': {
-            target: 'http://localhost:8085/api/1.0/data-streams-to-autocomplete',
+            target: 'http://localhost:8085/api/1.0/search-service',
             ws: true,
             changeOrigin: true,
             pathRewrite: {"^/api/fulltext" : "/"}          

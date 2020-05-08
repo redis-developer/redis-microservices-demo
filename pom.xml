@@ -19,7 +19,7 @@
         <module>db-to-streams-service</module>
         <module>sql-data-generator</module>
         <module>data-streams-to-graph</module>
-        <module>data-streams-to-autocomplete</module>
+        <module>streams-to-redisearch-service</module>
     </modules>
 
     <properties>

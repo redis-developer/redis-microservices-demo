@@ -1,7 +1,5 @@
-package io.redis.demos.autocomplete;
+package io.redis.demos.services.search.service;
 
-import io.redisearch.AggregationResult;
-import io.redisearch.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +8,7 @@ import java.util.*;
 
 @Slf4j
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/1.0/data-streams-to-autocomplete/")
+@RequestMapping("/api/1.0/search-service/")
 @RestController
 public class RestStatusController {
 

@@ -42,7 +42,7 @@
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import _ from 'underscore'
 
-const API_URL = 'http://localhost:8085/api/1.0/data-streams-to-autocomplete/:itemType/autocomplete?q=:query'
+const API_URL = '/api/fulltext/:itemType/autocomplete?q=:query'
 
 
 export default {

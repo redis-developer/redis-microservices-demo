@@ -1,8 +1,8 @@
-package io.redis.demos.autocomplete;
+package io.redis.demos.services.search.service;
 
-import io.redis.demos.autocomplete.schemas.ActorsSchema;
-import io.redis.demos.autocomplete.schemas.KeysPrefix;
-import io.redis.demos.autocomplete.schemas.MoviesSchema;
+import io.redis.demos.services.search.service.schemas.ActorsSchema;
+import io.redis.demos.services.search.service.schemas.KeysPrefix;
+import io.redis.demos.services.search.service.schemas.MoviesSchema;
 import io.redisearch.*;
 import io.redisearch.aggregation.AggregationBuilder;
 import io.redisearch.aggregation.SortedField;
@@ -19,7 +19,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

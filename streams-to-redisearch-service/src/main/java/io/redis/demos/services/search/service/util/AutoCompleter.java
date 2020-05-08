@@ -1,4 +1,4 @@
-package io.redis.demos.autocomplete.util;
+package io.redis.demos.services.search.service.util;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
@@ -25,8 +25,5 @@ public class AutoCompleter {
             return raw;
         }
     }
-    //    SUGADD("FT.SUGADD"),
-    //    SUGGET("FT.SUGGET"),
-    //    SUGDEL("FT.SUGDEL"),
-    //    SUGLEN("FT.SUGLEN");
+
 }

@@ -1,4 +1,4 @@
-package io.redis.demos.autocomplete.schemas;
+package io.redis.demos.services.search.service.schemas;
 
 abstract public class  KeysPrefix {
 
