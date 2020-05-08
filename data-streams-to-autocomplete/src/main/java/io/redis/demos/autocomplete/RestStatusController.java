@@ -94,5 +94,11 @@ public class RestStatusController {
         return result;
     }
 
+    @GetMapping("/movies/genres")
+    public Map<String,Object> getAllGenres() {
+        Map<String,Object> result = new HashMap<>();
+        result = redisService.getAllGenres();
+        return result;
+    }
 
 }

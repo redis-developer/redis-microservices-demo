@@ -14,7 +14,7 @@ module.exports = {
                 pathRewrite: {"^/api/legacy" : "/"}          
             },
             '^/api/caching': {
-                target: 'http://localhost:8084/api/1.0/cache-invalidator',
+                target: 'http://localhost:8084/api/1.0/caching',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {"^/api/caching" : "/"}          

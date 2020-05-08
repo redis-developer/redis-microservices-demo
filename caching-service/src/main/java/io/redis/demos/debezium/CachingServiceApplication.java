@@ -23,10 +23,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-public class CacheInvalidatorServiceApplication {
+public class CachingServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CacheInvalidatorServiceApplication.class, args);
+        SpringApplication.run(CachingServiceApplication.class, args);
     }
 
 }

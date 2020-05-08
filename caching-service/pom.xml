@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cache-invalidator-service</artifactId>
+    <artifactId>caching-service</artifactId>
     <description>Spring Boot app that listen to CDC event and update Redis</description>
 
 

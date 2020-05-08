@@ -23,9 +23,9 @@ public class MoviesSchema {
     public static Schema getSchema() {
         return new Schema()
                 .addTextField(TITLE, 5.0)
-                .addTextField(PLOT, 1.0)
-                .addTextField(GENRE, 1)
-                .addSortableNumericField(RELEASE_YEAR)
+                .addSortableTextField(PLOT, 1.0)
+                .addSortableTagField(GENRE, ",")
+                    .addSortableNumericField(RELEASE_YEAR)
                 .addSortableNumericField(RATING)
                 .addSortableNumericField(VOTES);
     }

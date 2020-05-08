@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestMapping("/api/1.0/cache-invalidator/")
+@RequestMapping("/api/1.0/caching/")
 @RestController
 @CrossOrigin("*")
 @Slf4j
@@ -25,7 +25,7 @@ public class RestStatusController {
     @GetMapping("/status")
     public Map<String,String> status() {
         Map<String,String> result = new HashMap<>();
-        result.put("service", "CacheInvalidatorServiceApplication");
+        result.put("service", "CachingServiceApplication");
         result.put("status", cdcEventListener.getState());
         result.put("version", "1.0");
         return result;
@@ -35,7 +35,7 @@ public class RestStatusController {
     public Map<String,String> start() throws IOException {
         Map<String,String> result = new HashMap<>();
         cdcEventListener.startDebezium();
-        result.put("service", "CacheInvalidatorServiceApplication");
+        result.put("service", "CachingServiceApplication");
         result.put("action", "start");
         return result;
     }
@@ -44,7 +44,7 @@ public class RestStatusController {
     public Map<String,String> stop() throws IOException {
         Map<String,String> result = new HashMap<>();
         cdcEventListener.stopDebezium();
-        result.put("service", "CacheInvalidatorServiceApplication");
+        result.put("service", "CachingServiceApplication");
         result.put("action", "stop");
         return result;
     }

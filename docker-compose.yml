@@ -61,9 +61,9 @@ services:
       - mysql-debezium-service
     restart: always
 
-  cdc-to-cache-service:
+  caching-service:
     build:
-      context: ./cache-invalidator-service
+      context: ./caching-service
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
@@ -112,7 +112,7 @@ services:
       - cdc-to-redis-streams-service
       - streams-to-autocomplete-service
       - streams-to-graph-service
-      - cdc-to-cache-service
+      - caching-service
       - sql-legacy-service
     restart: always
 

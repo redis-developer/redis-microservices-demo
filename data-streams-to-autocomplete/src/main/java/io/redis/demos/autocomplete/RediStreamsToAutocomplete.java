@@ -594,7 +594,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
     }
 
     public Map<String,Object> getInfoIndex(String indexName) {
-        String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
+        String complexIndexName = SEARCH_INDEX_PREFIX + indexName;
         Client client = searchClients.get(complexIndexName);
         return client.getInfo();
     }
@@ -789,7 +789,7 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
         result.put( "valueLabel", "sum" );
         result.put( "query", aggregation.getArgsString() );
         List<Map<String, Object>> stats = new ArrayList<>();
-        for (int i = 0; i <  resultSize-1  ; i++) {
+        for (int i = 0; i <  resultSize  ; i++) {
             Map<String, Object> entry =  new HashMap<>();
 
             if (groupByType.equalsIgnoreCase("Long")) {
@@ -803,5 +803,33 @@ public class RediStreamsToAutocomplete extends KeysPrefix {
         result.put("results", stats);
         return result;
     }
+
+    /**
+     * This method use RediSearch aggregation to retrieve the sorted list of genres from movies
+     * @return the list of genre as an array
+     */
+    public Map<String,Object> getAllGenres(){
+        log.info("getAllGenres");
+        Map<String,Object> result = new HashMap<>();
+
+        String complexIndexName = SEARCH_INDEX_PREFIX + "movies";
+        Client client = searchClients.get(complexIndexName);
+
+        AggregationBuilder aggregation = new AggregationBuilder("*")
+                .groupBy("@genre")
+                .sortBy(100, SortedField.asc("@genre"));
+
+        AggregationResult aggRresult = client.aggregate(aggregation);
+        int resultSize = aggRresult.getResults().size();
+        String[] genres = new String[resultSize];
+        for (int i = 0; i <  resultSize  ; i++) {
+            genres[i] = aggRresult.getRow(i).getString("genre");
+        }
+        result.put("values", genres);
+        result.put( "query", aggregation.getArgsString() );
+        result.put( "size", resultSize );
+        return result;
+    }
+
 
 }
