@@ -64,8 +64,8 @@ export default {
     this.$parent.contextualHelp = 
      "This part of the application shows RediSearch Suggest feature. Actors & Movies data are pushed in real time from th RDBMS to Redis using Streams." + 
      "Then a consumer is reading the data and push the data into  "+
-     "<b><a target='blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/data-streams-to-autocomplete/src/main/java/io/redis/demos/autocomplete/RediStreamsToAutocomplete.java#L283-L336'> Redis key</a></b>.<br/>" + 
-     "The data are then accessed using a generic <b><a target='blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/data-streams-to-autocomplete/src/main/java/io/redis/demos/autocomplete/RestStatusController.java#L49-L52'>REST API</a></b>.<br/><br/>" +
+     "<b><a target='blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/streams-to-redisearch-service/src/main/java/io/redis/demos/services/search/service/StreamsToRediSearch.java'> Redis key</a></b>.<br/>" + 
+     "The data are then accessed using a generic <b><a target='blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/streams-to-redisearch-service/src/main/java/io/redis/demos/services/search/service/RestStatusController.java'>REST API</a></b>.<br/><br/>" +
      "You can easily reuse the classes to add new Autocomplete feature to your application. (returning an id in the payload)" 
      ;
   },
