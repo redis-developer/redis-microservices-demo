@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.params.SetParams;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -76,7 +74,7 @@ public class WebServiceCachingService {
 
         if (key != null) {
 
-            String restCallKey = KEY_PREFIX + UUID.nameUUIDFromBytes(url.getBytes()).toString();
+            String restCallKey = KEY_PREFIX + imdbId;
 
             try (Jedis jedis = jedisPool.getResource()) {
 
