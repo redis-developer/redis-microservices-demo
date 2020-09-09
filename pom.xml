@@ -26,7 +26,7 @@
         <java.version>1.8</java.version>
         <version.jedis>3.2.0</version.jedis>
         <version.jredisgraph>2.0.3-SNAPSHOT</version.jredisgraph>
-        <version.jredisearch>1.6.0-SNAPSHOT</version.jredisearch>
+        <version.jredisearch>1.8.0</version.jredisearch>
         <version.debezium>1.1.0.Final</version.debezium>
         <version.springboot>2.2.5.RELEASE</version.springboot>
         <version.javax.inject>1</version.javax.inject>
