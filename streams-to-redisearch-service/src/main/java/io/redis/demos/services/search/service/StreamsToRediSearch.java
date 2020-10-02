@@ -9,6 +9,7 @@ import io.redisearch.aggregation.SortedField;
 import io.redisearch.aggregation.reducers.Reducers;
 import io.redisearch.client.AutoCompleter;
 import io.redisearch.client.Client;
+import io.redisearch.client.IndexDefinition;
 import io.redisearch.client.SuggestionOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -106,10 +107,14 @@ public class StreamsToRediSearch extends KeysPrefix {
                     if (jde.getMessage().equalsIgnoreCase("Unknown Index name")) {
                         log.warn(" Hard coded section - need some fix");
                         if ( itemName.equalsIgnoreCase("movies")) {
-                            c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions());
+                            IndexDefinition indexDefinition = new IndexDefinition()
+                                    .setPrefixes(new String[] {"ms:docs:movies:"});
+                            c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
                         }
                         if ( itemName.equalsIgnoreCase("actors")) {
-                            c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions());
+                            IndexDefinition indexDefinition = new IndexDefinition()
+                                    .setPrefixes(new String[] {"ms:docs:actors:"});
+                            c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
                         }
                         // TODO : add other types/schema & make it dynamic
                     } else {
@@ -547,7 +552,7 @@ public class StreamsToRediSearch extends KeysPrefix {
      * @param document
      * @param operation
      */
-    private void indexDocument(String indexName, Map<String,Object> document, String operation) {
+    private void indexDocument(String indexName, Map<String,String> document, String operation) {
 
         // TODO move this out
         String tablePk = "";
@@ -563,18 +568,19 @@ public class StreamsToRediSearch extends KeysPrefix {
             log.info("{} Indexing document ", operation);
             String complexIndexName = SEARCH_INDEX_PREFIX + indexName;
             Client client = searchClients.get(complexIndexName);
-            try {
+            try (Jedis jedis = jedisPool.getResource()) {
                 String docId = getKeyForDoc(indexName, document.get(tablePk));
                 if (operation.equalsIgnoreCase("CREATE")) {
                     // remove null values
                     // TODO : Check JRedis and manage bug/PR
                     document.values().removeIf(Objects::isNull);
-                    client.addDocument(docId, document);
+                    // Create/Update the HASH, that will be indexed
+                    jedis.hset(docId, document);
                     log.info("Adding fulltext search for {}.", docId);
                 } else if (operation.equalsIgnoreCase("UPDATE")) {
                     document.values().removeIf(Objects::isNull);
                     document.keySet().removeIf( e -> e.startsWith("before:")  );
-                    client.updateDocument(docId, 1, document);
+                    jedis.hset(docId, document);
                     log.info("Updating fulltext search for {}.", docId);
                 }
             } catch (Exception e) {
@@ -619,23 +625,23 @@ public class StreamsToRediSearch extends KeysPrefix {
      * @param ftsActionType : to check if this is suggest or index
      */
     private void processMovie(Map<String, String> data, String groupName, String operation, String  ftsActionType){
-        Map<String, Object> movie = new HashMap<>();
-        movie.put(MoviesSchema.MOVIE_ID, Integer.parseInt(data.get(MoviesSchema.MOVIE_ID)));
+        Map<String, String> movie = new HashMap<>();
+        movie.put(MoviesSchema.MOVIE_ID, data.get(MoviesSchema.MOVIE_ID));
         movie.put(MoviesSchema.TITLE, data.get(MoviesSchema.TITLE).toString());
         movie.put(MoviesSchema.GENRE , data.get(MoviesSchema.GENRE).toString());
-        movie.put(MoviesSchema.VOTES, Integer.parseInt(data.get(MoviesSchema.VOTES)));
-        movie.put(MoviesSchema.RATING, Float.parseFloat(data.get(MoviesSchema.RATING)));
-        movie.put(MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get(MoviesSchema.RELEASE_YEAR)));
+        movie.put(MoviesSchema.VOTES, data.get(MoviesSchema.VOTES));
+        movie.put(MoviesSchema.RATING, data.get(MoviesSchema.RATING));
+        movie.put(MoviesSchema.RELEASE_YEAR, data.get(MoviesSchema.RELEASE_YEAR));
         movie.put(MoviesSchema.PLOT, data.get(MoviesSchema.PLOT));
         movie.put(MoviesSchema.POSTER, data.get(MoviesSchema.POSTER));
 
         if (operation.equals("UPDATE")) {
-            movie.put("before:"+ MoviesSchema.MOVIE_ID, Integer.parseInt(data.get("before:"+ MoviesSchema.MOVIE_ID)));
+            movie.put("before:"+ MoviesSchema.MOVIE_ID, data.get("before:"+ MoviesSchema.MOVIE_ID));
             movie.put("before:"+ MoviesSchema.TITLE, data.get("before:"+ MoviesSchema.TITLE).toString());
             movie.put("before:"+ MoviesSchema.GENRE , data.get("before:"+ MoviesSchema.GENRE).toString());
-            movie.put("before:"+ MoviesSchema.VOTES, Integer.parseInt(data.get("before:"+ MoviesSchema.VOTES)));
-            movie.put("before:"+ MoviesSchema.RATING, Float.parseFloat(data.get("before:"+ MoviesSchema.RATING)));
-            movie.put("before:"+ MoviesSchema.RELEASE_YEAR, Integer.parseInt(data.get("before:"+ MoviesSchema.RELEASE_YEAR)));
+            movie.put("before:"+ MoviesSchema.VOTES, data.get("before:"+ MoviesSchema.VOTES));
+            movie.put("before:"+ MoviesSchema.RATING, data.get("before:"+ MoviesSchema.RATING));
+            movie.put("before:"+ MoviesSchema.RELEASE_YEAR, data.get("before:"+ MoviesSchema.RELEASE_YEAR));
             movie.put("before:"+ MoviesSchema.PLOT, data.get("before:"+ MoviesSchema.PLOT));
             movie.put("before:"+ MoviesSchema.POSTER, data.get("before:"+ MoviesSchema.POSTER));
         }
@@ -688,15 +694,15 @@ public class StreamsToRediSearch extends KeysPrefix {
      * @param ftsActionType
      */
     private void processActor(Map<String, String> data, String groupName, String operation, String  ftsActionType){
-        Map<String, Object> actor = new HashMap<>();
+        Map<String, String> actor = new HashMap<>();
         actor.put("first_name", data.get("first_name"));
         String lastName = data.get("last_name");
         if (lastName == null || lastName.trim().isEmpty()) {
             lastName = "-";
         }
         actor.put("last_name", lastName);
-        actor.put("dob", Integer.parseInt(data.get("dob")));
-        actor.put("actor_id", Integer.parseInt(data.get("actor_id")));
+        actor.put("dob", data.get("dob"));
+        actor.put("actor_id", data.get("actor_id"));
         actor.put( "full_name",  String.format("%s %s", data.get("first_name"), lastName ));
 
         if (operation.equals("UPDATE")) {
@@ -705,8 +711,8 @@ public class StreamsToRediSearch extends KeysPrefix {
                 beforeLastName = "-";
             }
             actor.put("before:last_name", beforeLastName);
-            actor.put("before:dob", Integer.parseInt(data.get("before:dob")));
-            actor.put("before:actor_id", Integer.parseInt(data.get("before:actor_id")));
+            actor.put("before:dob", data.get("before:dob"));
+            actor.put("before:actor_id", data.get("before:actor_id"));
             actor.put( "before:full_name",  String.format("%s %s", data.get("before:first_name"), beforeLastName ));
         }
 
