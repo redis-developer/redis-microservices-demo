@@ -16,6 +16,7 @@
         <b-nav-item><img src="/imgs/redis-logo.svg" height="30" /></b-nav-item>  
         <b-nav-item-dropdown text="Search " right>     <!-- Using 'button-content' slot -->
           <b-dropdown-item to="/search/movies" > <b-icon-camera-video /> Movies</b-dropdown-item>
+          <b-dropdown-item to="/search/movies/faceted" > <b-icon-camera-video /> Movies(Faceted)</b-dropdown-item>
           <b-dropdown-item to="/search/actors" > <b-icon-people-circle />  Actors</b-dropdown-item>
           <b-dropdown-item to="/autocomplete" >Autocomplete</b-dropdown-item>
         </b-nav-item-dropdown>

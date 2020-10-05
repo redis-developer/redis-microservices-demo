@@ -35,6 +35,16 @@ export default {
     return Repository.get(`${resource}/search/${item}?q=${term}`);
   }, 
 
+  searchWithPagination(queryString, page, perPage) {
+    const offset = perPage * page;
+    const limit = perPage;
+    return Repository.get(`${resource}/search-with-pagination/?q=${encodeURIComponent(queryString)}&offset=${offset}&limit=${limit}`);
+  }, 
+
+  getMovieGroupBy(field) {
+    return Repository.get(`${resource}/movies/group_by/${field}`);
+  }, 
+  
 
   changeConfigFlag(config) {
     return Repository.get(`${resource}/config/${config}`);
