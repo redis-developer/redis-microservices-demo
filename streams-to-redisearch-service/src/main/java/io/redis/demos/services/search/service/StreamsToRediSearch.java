@@ -829,5 +829,116 @@ public class StreamsToRediSearch extends KeysPrefix {
         return result;
     }
 
+    /**
+     * Get number of movie group by @groupByField
+     * @param groupByField
+     * @return
+     */
+    public Map<String,Object> getMovieGroupBy(String groupByField) {
+        Map<String,Object> result = new HashMap<>();
+
+        String complexIndexName = SEARCH_INDEX_PREFIX + "movies";
+        Client client = searchClients.get(complexIndexName);
+
+        // Create an aggregation query that list the genre
+        // FT.AGGREGATE complexIndexName "*" GROUPBY 1 @genre REDUCE COUNT 0 AS nb_of_movies SORTBY 2 @genre ASC
+        AggregationBuilder aggregation = new AggregationBuilder()
+                .groupBy("@"+groupByField, Reducers.count().as("nb_of_movies"))
+                .sortBy( SortedField.asc("@"+groupByField))
+                .limit(0,1000); // get all rows
+
+        AggregationResult aggrResult = client.aggregate(aggregation);
+        int resultSize = aggrResult.getResults().size();
+
+        List<Map<String, Object>> docsToReturn = new ArrayList<>();
+        List<Map<String, Object>> results =  aggrResult.getResults();
+
+        result.put("totalResults",aggrResult.totalResults);
+
+        List<Map<String,Object>> formattedResult = new ArrayList<>();
+
+        // get all result rows and format them
+        for (int i = 0; i <  resultSize  ; i++) {
+            Map<String, Object> entry =  new HashMap<>();
+            entry.put(groupByField, aggrResult.getRow(i).getString(groupByField));
+            entry.put("nb_of_movies", aggrResult.getRow(i).getLong("nb_of_movies"));
+            formattedResult.add(entry);
+        }
+        result.put("rows", formattedResult);
+        return result;
+    }
+
+    /** Execute the search query with
+     * some parameter
+     * @param queryString
+     * @param offset
+     * @param limit
+     * @param sortBy
+     * @return an object with meta: query header and docs: the list of documents
+     */
+    public Map<String,Object> searchWithPagination(String queryString, int offset, int limit, String sortBy, boolean ascending ){
+        // Let's put all the informations in a Map top make it easier to return JSON object
+        // no need to have "predefine mapping"
+        Map<String,Object> returnValue = new HashMap<>();
+        Map<String,Object> resultMeta = new HashMap<>();
+
+        String complexIndexName = SEARCH_INDEX_PREFIX + "movies";
+        Client client = searchClients.get(complexIndexName);
+
+
+        // Create a simple query
+        Query query = new Query(queryString)
+                .setWithScores()
+                .limit(offset, limit);
+        // if sort by parameter add it to the query
+        if (sortBy != null && !sortBy.isEmpty()) {
+            query.setSortBy(sortBy, ascending); // Ascending by default
+        }
+
+        // Execute the query
+        SearchResult queryResult = client.search(query);
+
+        // Adding the query string for information purpose
+        resultMeta.put("queryString",queryString);
+
+        // Get the total number of documents and other information for this query:
+        resultMeta.put("totalResults", queryResult.totalResults);
+        resultMeta.put("offset", offset);
+        resultMeta.put("limit", limit);
+
+        returnValue.put("meta", resultMeta);
+
+        // the docs are returned as an array of document, with the document itself being a list of k/v json documents
+        // not the easiest to manipulate
+        // the `raw_docs` is used to view the structure
+        // the `docs` will contain the list of document that is more developer friendly
+        //      capture in  https://github.com/RediSearch/JRediSearch/issues/121
+        returnValue.put("raw_docs", queryResult.docs);
+
+
+        // remove the properties array and create attributes
+        List<Map<String, Object>> docsToReturn = new ArrayList<>();
+        List<Document> docs =  queryResult.docs;
+
+        for (Document doc :docs) {
+
+            Map<String,Object> props = new HashMap<>();
+            Map<String,Object> meta = new HashMap<>();
+            meta.put("id", doc.getId());
+            meta.put("score", doc.getScore());
+            doc.getProperties().forEach( e -> {
+                props.put( e.getKey(), e.getValue() );
+            });
+
+            Map<String,Object> docMeta = new HashMap<>();
+            docMeta.put("meta",meta);
+            docMeta.put("fields",props);
+            docsToReturn.add(docMeta);
+        }
+
+        returnValue.put("docs", docsToReturn);
+
+        return returnValue;
+    }
 
 }

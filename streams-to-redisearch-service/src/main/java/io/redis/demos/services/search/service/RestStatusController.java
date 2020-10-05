@@ -24,6 +24,15 @@ public class RestStatusController {
         return redisService.search(object, term);
     }
 
+    @GetMapping("/search-with-pagination")
+    public Map<String,Object> searchWithPagination(
+            @RequestParam(name="q")String query,
+            @RequestParam(name="offset", defaultValue="0")int offset,
+            @RequestParam(name="limit", defaultValue="10")int limit,
+            @RequestParam(name="sortby", defaultValue="")String sortBy,
+            @RequestParam(name="ascending", defaultValue="true")boolean ascending) {
+        return redisService.searchWithPagination(query, offset, limit, sortBy,ascending);
+    }
 
     @GetMapping("/status")
     public Map<String,String> status() {
@@ -96,6 +105,11 @@ public class RestStatusController {
         Map<String,Object> result = new HashMap<>();
         result = redisService.getAllGenres();
         return result;
+    }
+
+    @GetMapping("/movies/group_by/{field}")
+    public Map<String,Object> getMovieGroupBy(@PathVariable("field") String field) {
+        return redisService.getMovieGroupBy(field);
     }
 
 }
