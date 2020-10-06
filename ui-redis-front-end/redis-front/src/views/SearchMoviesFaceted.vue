@@ -81,7 +81,7 @@
               <b-col cols="7">
                 <br/>
                 RediSearch Query:<br/> 
-                <small class="text-monospace">FT.SEARCH idx:movie "{{searchQuery}}"</small>
+                <small class="text-monospace">FT.SEARCH ms:search:index:movies "{{searchQuery}}"</small>
               </b-col>
             </b-row>
 
