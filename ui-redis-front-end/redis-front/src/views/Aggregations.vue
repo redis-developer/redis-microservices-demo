@@ -18,8 +18,7 @@ export default {
         }
       },
       methods: {
-        changeSelected (evt) {
-          console.log("TEST")
+        changeSelected () {
           this.selected = true
         }
       }
