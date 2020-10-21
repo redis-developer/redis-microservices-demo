@@ -55,7 +55,7 @@
 
 <script>
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
-const RediSearchRepository = RepositoryFactory.get('dataStreamsAutoCompleteRepository');
+const RediSearchRepository = RepositoryFactory.get('dataStreamsRedisHashSyncRepository');
 
 
 export default {
