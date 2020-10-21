@@ -80,7 +80,10 @@
             </div>
           </template>
           </div>
-
+          <div v-if="!movie.imdb_id" class="small">
+            <div>Cannot use OMDB API on this movie (IMDB Id not set)</div>
+            <div>Please select another movie</div>
+          </div>
     </b-col>
     <b-col>
       <div>
@@ -174,6 +177,9 @@ export default {
         this.ratings = undefined;
         const {data} = await CacheInvalidatorRepository.getRatings(this.movie.imdb_id, this.callWithCache);
         this.ratings = data;
+      } else {
+        this.ratings = null;
+        console.log(`Cannot call OMDB Web Service, the movie "${this.movie.title}": IMDB_ID value not set.`);
       }
     }
   },
