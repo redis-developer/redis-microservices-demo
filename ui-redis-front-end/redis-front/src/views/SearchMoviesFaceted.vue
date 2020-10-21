@@ -161,7 +161,7 @@
 
 <script>
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
-const RediSearchRepository = RepositoryFactory.get('dataStreamsAutoCompleteRepository');
+const RediSearchRepository = RepositoryFactory.get('dataStreamsRedisHashSyncRepository');
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 

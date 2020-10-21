@@ -36,7 +36,7 @@
       </b-card>
 
       <b-card
-        title="Auto-Complete"
+        title="Hash & Indexing"
         img-src="/imgs/autocomplete-service.png"
         img-alt="Image"
         img-top
@@ -45,42 +45,21 @@
       >
         <b-card-text>
           <div>
-          This service reads events from <b>Redis Streams</b> using various Consumer Groups, and update <b>RediSearch</b> index/suggestions. 
-          Configuration in <i>application.properties</i> file
+          This service reads events from <b>Redis Streams</b> using various consumer groups, and create/update a <b>hash</b> for each RDBMS record. 
+          The hashes are automatically indexed using <b>RediSearch</b> module. <br/>
+          In addition, movie title and actor name are used to populate RediSearch Autocompete Suggestion.
           </div>                
         </b-card-text>
 
-        <div class="text-justify">
-          <hr/>
-          <b-form-group label="Redis Search Services">
-            <b-form-checkbox-group
-              id="autoCompleteOptionSelector"
-              v-model="autoCompleteSelected"
-              :options="autoCompleteOptions"
-              switches
-              stacked
-            ></b-form-checkbox-group>
 
-            <b-form-checkbox-group
-              id="ftsOptionSelector"
-              v-model="ftsSelected"
-              :options="ftsOptions"
-              switches
-              stacked
-            ></b-form-checkbox-group>
-
-          </b-form-group>
-        </div>
-
-
-        <b-button @click="streamsToAutocompleteChangeStatus"  >
-          {{(streamAutoCompleteServiceStatus.call.status == "RUNNING")?"Stop It!":"Start It!"  }}
+        <b-button @click="streamsRedisHashIndexedChangeStatus"  >
+          {{(streamRedisHashIndexedServiceStatus.call.status == "RUNNING")?"Stop It!":"Start It!"  }}
         </b-button>
 
 
         <template v-slot:footer>
-          <b-alert :variant="streamAutoCompleteServiceStatus.messageColor" show>
-            Status : {{streamAutoCompleteServiceStatus.call.status}} 
+          <b-alert :variant="streamRedisHashIndexedServiceStatus.messageColor" show>
+            Status : {{streamRedisHashIndexedServiceStatus.call.status}} 
           </b-alert>
         </template>
       </b-card>
@@ -112,7 +91,7 @@
         </template>
       </b-card>
 
-    <b-card
+    <!-- (See issue #32) b-card
         title="Redis Data Structures"
         img-src="/imgs/cdc-service-2.png"
         img-alt="Image"
@@ -137,9 +116,9 @@
             Status : {{cacheServiceStatus.call.status}} 
           </b-alert>
         </template>
-      </b-card>
+      </b-card -->
 
-    <b-card
+    <!-- (See issue #32) b-card
         title="Legacy API"
         img-src="/imgs/rdbms-service.png"
         img-alt="Image"
@@ -163,7 +142,7 @@
             Status : {{rdbmsServiceStatus.call.status}} 
           </b-alert>
         </template>
-      </b-card>
+      </b-card -->
     </b-card-group>
   </div>  
 </div>
@@ -174,7 +153,7 @@ import { RepositoryFactory } from './../repositories/RepositoryFactory'
 const RDBMSRepository = RepositoryFactory.get('rdbmsRepository')
 const DataStreamsToGraphRepository = RepositoryFactory.get('dataStreamsToGraphRepository');
 const DataStreamsProducerRepository = RepositoryFactory.get('dataStreamsProducerRepository');
-const DataStreamsAutoCompleteRepository = RepositoryFactory.get('dataStreamsAutoCompleteRepository');
+const DataStreamsRedisHashSyncRepository = RepositoryFactory.get('dataStreamsRedisHashSyncRepository');
 const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorRepository')
 
 
@@ -183,7 +162,7 @@ export default {
   data() {
     return {
       streamProducerServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
-      streamAutoCompleteServiceStatus: {info:null,call:{status : "ERROR", "fulltext": "false", "suggest": "false" },messageColor:""},
+      streamRedisHashIndexedServiceStatus: {info:null,call:{status : "ERROR", "fulltext": "false", "suggest": "false" },messageColor:""},
       streamsToGraphServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
       cacheServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
       rdbmsServiceStatus: {info:null,call:{status : "ERROR"},messageColor:""},
@@ -253,34 +232,20 @@ export default {
         this.streamProducerServiceStatus.messageColor = "warning";
         }
 
-
-        data = await DataStreamsAutoCompleteRepository.status()
+        data = await DataStreamsRedisHashSyncRepository.status()
         if (data.data != undefined) {
-          this.streamAutoCompleteServiceStatus.call = data.data;
+          this.streamRedisHashIndexedServiceStatus.call = data.data;
         } else  {
-          this.streamAutoCompleteServiceStatus.call = {status : "ERROR", "fulltext": "false", "suggest": "false" };
+          this.streamRedisHashIndexedServiceStatus.call = {status : "ERROR", "fulltext": "false", "suggest": "false" };
         }
-        this.streamAutoCompleteServiceStatus.info = DataStreamsAutoCompleteRepository.getServiceInfo();
-        if (this.streamAutoCompleteServiceStatus.call.status == "RUNNING") {
-        this.streamAutoCompleteServiceStatus.messageColor = "success";
-        } else if (this.streamAutoCompleteServiceStatus.call.status == "ERROR") {
-        this.streamAutoCompleteServiceStatus.messageColor = "danger";
+        this.streamRedisHashIndexedServiceStatus.info = DataStreamsRedisHashSyncRepository.getServiceInfo();
+        if (this.streamRedisHashIndexedServiceStatus.call.status == "RUNNING") {
+        this.streamRedisHashIndexedServiceStatus.messageColor = "success";
+        } else if (this.streamRedisHashIndexedServiceStatus.call.status == "ERROR") {
+        this.streamRedisHashIndexedServiceStatus.messageColor = "danger";
         }  else {
-        this.streamAutoCompleteServiceStatus.messageColor = "warning";
+        this.streamRedisHashIndexedServiceStatus.messageColor = "warning";
         }
-
-        // print the status of the Search features (autocomplete/fts)
-        if (this.streamAutoCompleteServiceStatus.call.suggest == "true") {
-          this.autoCompleteSelected = ["autocomplete"];
-        } else {
-          this.autoCompleteSelected = [];
-        }
-        if (this.streamAutoCompleteServiceStatus.call.fulltext == "true") {
-          this.ftsSelected = ["fulltext"];
-        } else {
-          this.ftsSelected = [];
-        }
-
 
         data = await DataStreamsToGraphRepository.status()
         if (data.data != undefined) {
@@ -310,13 +275,13 @@ export default {
       }
       this.streamProducerServiceStatus.call.status = "...";
     },
-    async streamsToAutocompleteChangeStatus() {
-      if (this.streamAutoCompleteServiceStatus.call.status == "RUNNING") {
-        await DataStreamsAutoCompleteRepository.stop()
+    async streamsRedisHashIndexedChangeStatus() {
+      if (this.streamRedisHashIndexedServiceStatus.call.status == "RUNNING") {
+        await DataStreamsRedisHashSyncRepository.stop()
       } else {
-        await DataStreamsAutoCompleteRepository.start()
+        await DataStreamsRedisHashSyncRepository.start()
       }
-      this.streamAutoCompleteServiceStatus.call.status = "...";
+      this.streamRedisHashIndexedServiceStatus.call.status = "...";
     },
     async streamsToGraphChangeStatus() {
       if (this.streamsToGraphServiceStatus.call.status == "RUNNING") {
