@@ -62,15 +62,17 @@ export default {
   name: "Search",
   data() {
     return {
-      searchQuery : "",
+      searchQuery : "*",
       searchResult : {},
     }
   },
   created() {
-        this.$parent.contextualHelp = 
+    this.$parent.contextualHelp = 
         "This search form is based on RediSearch on the Movie index (<i>\"idx:ms:search:index:movies\"</<i>).<br>You can use various query such as:"+
         "<ul><li>wars -CIVIL</li></ul>"+
         "<p>Update, create a movie and you will see that the index is updated. (If the <a href='/services'>service</a> is running)</p>";
+
+    this.search();
 
   },
   methods : {
