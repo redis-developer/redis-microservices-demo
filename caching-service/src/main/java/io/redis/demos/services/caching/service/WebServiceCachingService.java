@@ -128,7 +128,7 @@ public class WebServiceCachingService {
      * @return
      */
     public String getOMDBAPIKey(){
-        if (omdbAPIKEY == null){
+        if (omdbAPIKEY == null || omdbAPIKEY.isEmpty()){
             log.info("Load omdbAPIKEY from Redis Configuration");
             Jedis jedis = null;
             try {
