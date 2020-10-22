@@ -63,12 +63,15 @@
 
           <b-button type="submit" variant="primary">Submit</b-button>
           &nbsp;
-          <b-button type="reset" variant="">Reset</b-button>
+          <b-button type="reset" >Reset</b-button>
 
           <hr/>
 
+
+
           <div v-if="ratings" >
-          <b-icon-reply class="large" @click="getRatings" />  
+            <b-button name="call-ws" variant="success" title="Call Web Service"><b-icon-reply class="large" @click="getRatings" />  </b-button>
+           
             -  IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
             - Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
             - Metacritic : <span v-html='ratings["Metacritic"]' />
