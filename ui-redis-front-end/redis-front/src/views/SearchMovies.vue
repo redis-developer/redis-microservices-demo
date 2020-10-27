@@ -36,11 +36,18 @@
        <img width=130 :src="doc.body.poster" />
      </b-card-text>
 
-      <template v-slot:footer>
-        
-        <b-button @click="goToMovie( doc.body.movie_id)">
-          View
-        </b-button>
+      <template v-slot:footer >
+        <b-row class="small">
+        <b-col>
+        {{ doc.body.genre }}
+        </b-col>
+        <b-col>
+          <b-button size="sm" @click="goToMovie( doc.body.movie_id)">View</b-button>
+        </b-col>
+        <b-col class="text-right">
+        {{ Number.parseFloat(doc.body.rating).toFixed(1) }}
+        </b-col>
+        </b-row>
       </template>
 
     </b-card>
