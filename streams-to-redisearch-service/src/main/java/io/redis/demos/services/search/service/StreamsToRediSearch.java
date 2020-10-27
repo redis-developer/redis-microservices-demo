@@ -500,16 +500,35 @@ public class StreamsToRediSearch extends KeysPrefix {
      */
     public Map<String,Object> search(String indexName, String q, int offset, int limit) {
         Map<String,Object> result = new HashMap<>();
+        Map<String,Object> resultMeta = new HashMap<>();
+
         String complexIndexName = "ms:search:index:" + indexName; // TODO: hard coded values....
         Client client = searchClients.get(complexIndexName);
 
         log.info("Search `{}` with `{}` ", complexIndexName, q);
 
         Query query = new Query(q)
+                        .setSortBy( MoviesSchema.TITLE, true )
                         .limit(offset, limit);
 
+        long start = System.currentTimeMillis();
+        // Execute the query
         SearchResult queryResult = client.search(query);
-        result.put("totalResults", queryResult.totalResults);
+        long end = System.currentTimeMillis();
+
+        // Adding the query string for information purpose
+        resultMeta.put("queryString",query);
+
+        // Get the total number of documents and other information for this query:
+        resultMeta.put("totalResults", queryResult.totalResults);
+        resultMeta.put("elaspedTimeMs",  end - start );
+        resultMeta.put("offset", offset);
+        resultMeta.put("limit", limit);
+
+        result.put("meta", resultMeta);
+
+        //result.put("totalResults", queryResult.totalResults);
+        //result.put("elaspedTimeMs", end - start);
         List<Map<String, Object>> docsToReturn = new ArrayList<>();
 
 
@@ -777,11 +796,15 @@ public class StreamsToRediSearch extends KeysPrefix {
                 .groupBy("@"+ groupBy, Reducers.count().as("sum"))
                 .sortBy(count, SortedField.asc("@"+orderBy));
 
+        long start = System.currentTimeMillis();
+        // Execute the aggregate query
         AggregationResult aggRresult = client.aggregate(aggregation);
+        long end = System.currentTimeMillis();
 
         int resultSize = aggRresult.getResults().size();
 
         result.put("totalResults",aggRresult.totalResults);
+        result.put("elaspedTimeMs",end - start);
         result.put("cursorId",aggRresult.getCursorId());
         result.put( "keyLabel", groupBy );
         result.put( "valueLabel", "sum" );
@@ -895,14 +918,17 @@ public class StreamsToRediSearch extends KeysPrefix {
             query.setSortBy(sortBy, ascending); // Ascending by default
         }
 
+        long start = System.currentTimeMillis();
         // Execute the query
         SearchResult queryResult = client.search(query);
+        long end = System.currentTimeMillis();
 
         // Adding the query string for information purpose
         resultMeta.put("queryString",queryString);
 
         // Get the total number of documents and other information for this query:
         resultMeta.put("totalResults", queryResult.totalResults);
+        resultMeta.put("elaspedTimeMs",  end - start );
         resultMeta.put("offset", offset);
         resultMeta.put("limit", limit);
 
