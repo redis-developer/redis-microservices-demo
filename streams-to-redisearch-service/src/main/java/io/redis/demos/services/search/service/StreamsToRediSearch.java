@@ -508,7 +508,6 @@ public class StreamsToRediSearch extends KeysPrefix {
         log.info("Search `{}` with `{}` ", complexIndexName, q);
 
         Query query = new Query(q)
-                        .setSortBy( MoviesSchema.TITLE, true )
                         .limit(offset, limit);
 
         long start = System.currentTimeMillis();
