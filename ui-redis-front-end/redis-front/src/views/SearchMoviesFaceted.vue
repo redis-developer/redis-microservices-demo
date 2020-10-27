@@ -89,9 +89,11 @@
 
 
 <b-container class="mb-2 mt-2">
-<b-row v-if="searchResult.meta.totalResults">
-  {{searchResult.meta.totalResults}} movies found, showing {{searchResult.meta.offset + 1}} to {{searchResult.meta.offset + searchResult.meta.limit }}
-</b-row>
+<b-row >
+      {{ searchResult.meta.totalResults }} movies found in {{ searchResult.meta.elaspedTimeMs }} ms
+      <span v-if="searchResult.meta.totalResults > 0" >
+      , showing {{ searchResult.meta.offset + 1 }} to {{ searchResult.meta.limit }}
+      </span></b-row>
 </b-container>
 
 <b-row>

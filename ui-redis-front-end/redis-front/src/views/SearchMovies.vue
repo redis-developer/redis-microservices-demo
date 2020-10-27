@@ -16,8 +16,12 @@
       </b-input-group>
     </b-form>
 
-
-<hr>
+<div class="mb-2 mt-2 text-justify">
+      {{ searchResult.meta.totalResults }} movies found in {{ searchResult.meta.elaspedTimeMs }} ms
+      <span v-if="searchResult.meta.totalResults > 0" >
+      , showing {{ searchResult.meta.offset + 1 }} to {{ searchResult.meta.limit }}
+      </span>
+</div>
 
 <b-row>
   <div 
