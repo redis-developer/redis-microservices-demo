@@ -62,9 +62,7 @@
           </b-form-group>
 
           <b-button type="submit" variant="primary">Submit</b-button>
-          &nbsp;
-          <b-button type="reset" >Reset</b-button>
-
+          
           <hr/>
 
 
