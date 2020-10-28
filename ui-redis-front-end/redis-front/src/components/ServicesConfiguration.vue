@@ -14,6 +14,7 @@
                         <b-button class="btn btn-outline" type="button" id="saveOmdbKey" @click="saveOmdbApiKey">Save</b-button>
                     </div>
                 </div>
+                <span class="small">Total Number of calls : {{omdbApiCalls}} </span>
             </div>
             <div class="col-sm">
             </div>
@@ -54,6 +55,7 @@ export default {
     data() {
         return {
             omdbApiKey : null,
+            omdbApiCalls : 0,
             dismissSecs: 4,
             dismissCountDown: 0,
             showDismissibleAlert: false
@@ -64,8 +66,9 @@ export default {
     },
     methods: {
         async fetch() {
-            const { data } = await CacheInvalidatorRepository.getOmdbApiKeyRatings();
-            this.omdbApiKey = data.value;
+            const { data } = await CacheInvalidatorRepository.getOmdbApiStats();
+            this.omdbApiKey = data.OMDB_API_KEY;
+            this.omdbApiCalls = data.OMDB_API_CALLS;
 
         },
         async saveOmdbApiKey(){

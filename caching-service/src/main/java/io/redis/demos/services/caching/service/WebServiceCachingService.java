@@ -40,6 +40,7 @@ public class WebServiceCachingService {
     public static final String KEY_PREFIX = "ms:cache:ws:";
     public static final String KEY_CONFIG = "ms:config";
     public static final String OMDB_API_KEY = "OMDB_API_KEY";
+    public static final String OMDB_API_CALLS = "OMDB_API_CALLS";
     public static final String OMDB_API_URL = "http://www.omdbapi.com/?apikey=";
     public static final int TTL = 120;
     ObjectMapper jsonMapper = new ObjectMapper();
@@ -91,6 +92,8 @@ public class WebServiceCachingService {
                     ResponseHandler<String> responseHandler = new BasicResponseHandler();
 
                     String WsCall = httpClient.execute(getRequest, responseHandler);
+                    // increment the counter of call
+                    jedis.hincrBy(KEY_CONFIG, OMDB_API_CALLS, 1);
 
                     Map<String, Object> map = jsonMapper.readValue(WsCall, Map.class);
                     List<Map<String, String>> ratings = (List<Map<String, String>>) map.get("Ratings");
@@ -102,8 +105,11 @@ public class WebServiceCachingService {
 
                     returnValue.putAll(ratingAsMap);
 
-                    jedis.hset(restCallKey, returnValue);
-                    jedis.expire(restCallKey, TTL);
+                    // Set the value into Redis only if the cache is enabled
+                    if (withCache) {
+                        jedis.hset(restCallKey, returnValue);
+                        jedis.expire(restCallKey, TTL);
+                    }
                 }
 
             } catch(HttpResponseException e){
@@ -130,17 +136,24 @@ public class WebServiceCachingService {
     public String getOMDBAPIKey(){
         if (omdbAPIKEY == null || omdbAPIKEY.isEmpty()){
             log.info("Load omdbAPIKEY from Redis Configuration");
-            Jedis jedis = null;
-            try {
-                jedis = jedisPool.getResource();
+            try (Jedis jedis = jedisPool.getResource()) {
                 omdbAPIKEY = jedis.hget(KEY_CONFIG,OMDB_API_KEY);
-            } finally {
-                if (jedis != null){
-                    jedis.close();
-                }
             }
         }
         return omdbAPIKEY;
+    }
+
+    public Map<String, Object> getOMDBAPIStats(){
+        Map<String, Object> result = new HashMap<>();
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            List<String> values = jedis.hmget(KEY_CONFIG, OMDB_API_KEY, OMDB_API_CALLS);
+            result.put(OMDB_API_KEY, values.get(0));
+            result.put(OMDB_API_CALLS, values.get(1)==null?"0": Integer.parseInt(values.get(1)));
+        }
+
+
+        return result;
     }
 
     /**

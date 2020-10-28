@@ -79,4 +79,10 @@ public class RestStatusController {
         result.put("value", webServiceCachingService.getOMDBAPIKey());
         return result;
     }
+
+    @GetMapping("/stats/omdb_api")
+    public Map<String,Object> getOmdbApiStats() throws IOException {
+        return webServiceCachingService.getOMDBAPIStats();
+    }
+
 }
