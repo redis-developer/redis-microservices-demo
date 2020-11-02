@@ -46,10 +46,12 @@ export default {
   }, 
   
   getMovieById(id){
-    console.log(`${resource}movies/${id}`)
     return Repository.get(`${resource}movies/${id}`);
   },
 
+  getActorById(id){
+    return Repository.get(`${resource}actors/${id}`);
+  },
   changeConfigFlag(config) {
     return Repository.get(`${resource}/config/${config}`);
   }, 

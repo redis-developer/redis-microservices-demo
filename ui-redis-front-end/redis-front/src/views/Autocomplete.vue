@@ -33,6 +33,9 @@
           <b-col class="text-left">
           {{ movieJson.genre }}
           </b-col>
+          <b-col>
+            <b-button size="sm" @click="goToMovie( movieJson.movie_id)">View</b-button>
+          </b-col>
           <b-col class="text-right">
           {{ Number.parseFloat(movieJson.rating).toFixed(1) }}
           </b-col>
@@ -55,6 +58,24 @@
       @hit="selectActor = $event"
     >
     </vue-bootstrap-typeahead>
+
+    <b-row class="mt-2"> 
+      <b-col></b-col>
+      <b-col>
+        <b-card v-if="actorJson">
+          <b-card-title>{{actorJson.first_name}} {{actorJson.last_name}}</b-card-title>
+          <b-card-sub-title class="mb-2">{{actorJson.dob}} </b-card-sub-title>
+          <template v-slot:footer>
+            <b-button @click="goToActor( actorJson.actor_id)">
+              View
+            </b-button>
+          </template>
+        </b-card>
+      </b-col>
+      <b-col></b-col>
+    </b-row>
+
+
     </b-jumbotron>
   </b-container >
 
@@ -85,6 +106,7 @@ export default {
       movies: [],
       movieSearch: '',
       selectedMovie: null,
+      actorJson : null,
       actors: [],
       actorSearch: '',
       selectedActor: null,
@@ -101,10 +123,10 @@ export default {
   },
   methods: {
     async getMovies(query) {
+      this.movieJson = null;
       if (query != "") {
         const res = await fetch(API_URL.replace(':itemType', "movies").replace(':query', query));
         const suggestions = await res.json();
-        console.log(suggestions)
         this.selectedMovie = null;
         this.movies = suggestions;
         // whena single movie is selected
@@ -112,7 +134,6 @@ export default {
           this.selectedMovie = this.movies[0];
           const {data} = await RediSearchRepository.getMovieById(this.selectedMovie.id);
           this.movieJson = data;
-          console.log(this.movieJson);
         }
 
 
@@ -122,16 +143,31 @@ export default {
       }
     },
     async getActors(query) {
+      this.actorJson = null;
       if (query != "") {
         const res = await fetch(API_URL.replace(':itemType', "actors").replace(':query', query));
         const suggestions = await res.json();
-        console.log(suggestions)
         this.actors = suggestions;
+        // whena single movie is selected
+        if (this.actors && this.actors.length == 1  ) {
+          this.selectedActor = this.actors[0];
+          const {data} = await RediSearchRepository.getActorById(this.selectedActor.id);
+          this.actorJson = data;
+        }
       } else {
+        this.selectedActor = null;
         this.actors = [];
       }
     },
-    
+
+    goToMovie(id) {
+      this.$router.push({ name: 'MovieForm', params: { id: id }});
+    },
+
+    goToActor(id) {
+      this.$router.push({ name: 'ActorForm', params: { id: id }});
+    }
+
   },
 
   watch: {

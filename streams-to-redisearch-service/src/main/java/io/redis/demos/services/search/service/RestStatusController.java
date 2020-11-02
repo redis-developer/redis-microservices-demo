@@ -117,4 +117,8 @@ public class RestStatusController {
         return redisService.getMovieById(id);
     }
 
+    @GetMapping("/actors/{id}")
+    public Map<String,String> getActorById(@PathVariable("id") String id) {
+        return redisService.getActorById(id);
+    }
 }

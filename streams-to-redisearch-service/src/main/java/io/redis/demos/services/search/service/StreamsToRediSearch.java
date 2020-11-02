@@ -982,4 +982,17 @@ public class StreamsToRediSearch extends KeysPrefix {
         return result;
     }
 
+    /**
+     * Find actor from Redis database
+     * @param actorId
+     * @return
+     */
+    public Map<String,String> getActorById(String actorId) {
+        Map<String,String> result = new HashMap<>();
+        try (Jedis jedis = jedisPool.getResource()) {
+            result = jedis.hgetAll(DOC_PREFIX_ACTOR + actorId);
+        }
+        return result;
+    }
+
 }
