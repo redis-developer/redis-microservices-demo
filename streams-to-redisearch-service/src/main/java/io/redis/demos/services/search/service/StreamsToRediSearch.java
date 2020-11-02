@@ -474,7 +474,7 @@ public class StreamsToRediSearch extends KeysPrefix {
         Client search = suggestClients.get(complexIndexName);
 
         if (search != null) {
-            List<Suggestion> suggestions = search.getSuggestion(term, SuggestionOptions.builder().max(100).fuzzy().with(SuggestionOptions.With.PAYLOAD).build() );
+            List<Suggestion> suggestions = search.getSuggestion(term, SuggestionOptions.builder().max(100).with(SuggestionOptions.With.PAYLOAD).build() );
 
             result = suggestions
                     .stream()
