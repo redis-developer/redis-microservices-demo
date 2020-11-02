@@ -112,4 +112,9 @@ public class RestStatusController {
         return redisService.getMovieGroupBy(field);
     }
 
+    @GetMapping("/movies/{id}")
+    public Map<String,String> getMovieById(@PathVariable("id") String id) {
+        return redisService.getMovieById(id);
+    }
+
 }

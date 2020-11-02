@@ -36,6 +36,9 @@ public class StreamsToRediSearch extends KeysPrefix {
     private final static String SUGGEST_OP = "SUGG";
     private final static String INDEX_OP = "IDX";
 
+    private final static String DOC_PREFIX_MOVIE = "ms:docs:movies:";
+    private final static String DOC_PREFIX_ACTOR = "ms:docs:actors:";
+
     // URI used to connect to Redis database
     @Value("${redis.uri}")
     private String redisUri;
@@ -108,12 +111,12 @@ public class StreamsToRediSearch extends KeysPrefix {
                         log.warn(" Hard coded section - need some fix");
                         if ( itemName.equalsIgnoreCase("movies")) {
                             IndexDefinition indexDefinition = new IndexDefinition()
-                                    .setPrefixes(new String[] {"ms:docs:movies:"});
+                                    .setPrefixes(new String[] {DOC_PREFIX_MOVIE});
                             c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
                         }
                         if ( itemName.equalsIgnoreCase("actors")) {
                             IndexDefinition indexDefinition = new IndexDefinition()
-                                    .setPrefixes(new String[] {"ms:docs:actors:"});
+                                    .setPrefixes(new String[] {DOC_PREFIX_ACTOR});
                             c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
                         }
                         // TODO : add other types/schema & make it dynamic
@@ -964,6 +967,19 @@ public class StreamsToRediSearch extends KeysPrefix {
         returnValue.put("docs", docsToReturn);
 
         return returnValue;
+    }
+
+    /**
+     * Find movie from Redis database
+     * @param movieId
+     * @return
+     */
+    public Map<String,String> getMovieById(String movieId) {
+        Map<String,String> result = new HashMap<>();
+        try (Jedis jedis = jedisPool.getResource()) {
+            result = jedis.hgetAll(DOC_PREFIX_MOVIE + movieId);
+        }
+        return result;
     }
 
 }

@@ -45,6 +45,10 @@ export default {
     return Repository.get(`${resource}/movies/group_by/${field}`);
   }, 
   
+  getMovieById(id){
+    console.log(`${resource}movies/${id}`)
+    return Repository.get(`${resource}movies/${id}`);
+  },
 
   changeConfigFlag(config) {
     return Repository.get(`${resource}/config/${config}`);
