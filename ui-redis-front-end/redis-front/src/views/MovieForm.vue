@@ -70,13 +70,13 @@
           <div v-if="ratings" >
             <b-button name="call-ws" variant="success" title="Call Web Service"><b-icon-reply class="large" @click="getRatings" />  </b-button>
            
-            -  IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
-            - Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
-            - Metacritic : <span v-html='ratings["Metacritic"]' />
+              IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
+              | Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
+              | Metacritic : <span v-html='ratings["Metacritic"]' />
           <template>
             <div>
             <b-form-checkbox v-model="callWithCache" name="check-button" switch>  
-              Redis Cache  ( {{ratings.elapsedTimeMs}} ms)
+              Redis Cache  ( {{ratings.elapsedTimeMs}} ms  | <small>OMDB API Calls:</small> {{ratings.omdbApiCalls}})
             </b-form-checkbox>
             </div>
           </template>

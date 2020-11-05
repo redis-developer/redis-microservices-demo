@@ -112,6 +112,10 @@ public class WebServiceCachingService {
                     }
                 }
 
+                // get the total number of calls to the OMDB API
+                returnValue.put("omdbApiCalls" , jedis.hget(KEY_CONFIG, OMDB_API_CALLS));
+
+
             } catch(HttpResponseException e){
                 // Small hack to keep it simple
                 returnValue.put("Metacritic", "<p style='color:red'>Error: OMDBAPI Key is invalid -- see services page</p>");
