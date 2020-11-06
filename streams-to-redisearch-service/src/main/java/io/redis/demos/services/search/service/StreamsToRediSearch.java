@@ -1,6 +1,7 @@
 package io.redis.demos.services.search.service;
 
 import io.redis.demos.services.search.service.schemas.ActorsSchema;
+import io.redis.demos.services.search.service.schemas.CommentsSchema;
 import io.redis.demos.services.search.service.schemas.KeysPrefix;
 import io.redis.demos.services.search.service.schemas.MoviesSchema;
 import io.redisearch.*;
@@ -38,6 +39,7 @@ public class StreamsToRediSearch extends KeysPrefix {
 
     private final static String DOC_PREFIX_MOVIE = "ms:docs:movies:";
     private final static String DOC_PREFIX_ACTOR = "ms:docs:actors:";
+    private final static String DOC_PREFIX_MOVIE_COMMENTS = "ms:comments:movie:";
 
     // URI used to connect to Redis database
     @Value("${redis.uri}")
@@ -73,6 +75,57 @@ public class StreamsToRediSearch extends KeysPrefix {
         log.info(" === StreamsToRediSearch Started : Waiting for user action  ===");
     }
 
+    /**
+     * This method check of the index exist, if not it is created
+     * @param itemName
+     * @param autocomplete
+     */
+    private void checkRediSearchSchema(String itemName, boolean autocomplete){
+
+        String searchKey = SEARCH_INDEX_PREFIX + itemName;
+        log.info("Prepare index {} ", searchKey);
+        Client c = new Client( searchKey, jedisPool );
+        searchClients.put(searchKey, c);
+
+
+        if (autocomplete) {
+            // suggestion
+            String suggKey = SUGGEST_PREFIX + itemName;
+            Client cSuggest = new Client( suggKey , jedisPool ); // TODO: check if still needed
+            suggestClients.put(suggKey, cSuggest);
+        }
+
+        // check if search index exists if not create it
+        try {
+            c.getInfo();
+        } catch(JedisDataException jde) {
+            if (jde.getMessage().equalsIgnoreCase("Unknown Index name")) {
+                log.info("Create Index : {}", itemName);
+                // TODO : Make this dynamic, from schema definition
+                if ( itemName.equalsIgnoreCase("movies")) {
+                    IndexDefinition indexDefinition = new IndexDefinition()
+                            .setPrefixes(new String[] {DOC_PREFIX_MOVIE});
+                    c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
+                }
+                else if ( itemName.equalsIgnoreCase("actors")) {
+                    IndexDefinition indexDefinition = new IndexDefinition()
+                            .setPrefixes(new String[] {DOC_PREFIX_ACTOR});
+                    c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
+                }
+                else if ( itemName.equalsIgnoreCase("comments:movies")) {
+                    IndexDefinition indexDefinition = new IndexDefinition()
+                            .setPrefixes(new String[] {DOC_PREFIX_MOVIE_COMMENTS});
+                    c.createIndex(CommentsSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
+                }
+
+            } else {
+                log.warn(jde.getMessage());
+                throw  jde;
+            }
+        }
+
+    }
+
     @PostConstruct
     private void init(){
 
@@ -84,49 +137,15 @@ public class StreamsToRediSearch extends KeysPrefix {
             URI redisConnectionString = new URI(redisUri);
             jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
 
-            // loop on each streams to
-            //  - get search and autocomplete keys
-            //
-
+            // Using stream to create the index (for CDC based data)
             streamList.forEach(streamKey -> {
                 String[] s = streamKey.split(":");
                 String itemName = s[s.length-1];
-
-                // suggestion
-                String suggKey = SUGGEST_PREFIX + itemName;
-                Client c = new Client( suggKey , jedisPool );
-                suggestClients.put(suggKey, c);
-
-                // search index, create index if not present
-                String searchKey = SEARCH_INDEX_PREFIX + itemName;
-                log.info("Prepare index {} ", searchKey);
-                c = new Client( searchKey, jedisPool );
-                searchClients.put(searchKey, c);
-
-                // check if search index exists if not create it
-                try {
-                    c.getInfo();
-                } catch(JedisDataException jde) {
-                    if (jde.getMessage().equalsIgnoreCase("Unknown Index name")) {
-                        log.warn(" Hard coded section - need some fix");
-                        if ( itemName.equalsIgnoreCase("movies")) {
-                            IndexDefinition indexDefinition = new IndexDefinition()
-                                    .setPrefixes(new String[] {DOC_PREFIX_MOVIE});
-                            c.createIndex(MoviesSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
-                        }
-                        if ( itemName.equalsIgnoreCase("actors")) {
-                            IndexDefinition indexDefinition = new IndexDefinition()
-                                    .setPrefixes(new String[] {DOC_PREFIX_ACTOR});
-                            c.createIndex(ActorsSchema.getSchema(), Client.IndexOptions.defaultOptions().setDefinition(indexDefinition));
-                        }
-                        // TODO : add other types/schema & make it dynamic
-                    } else {
-                        log.warn(jde.getMessage());
-                        throw  jde;
-                    }
-                }
-
+                checkRediSearchSchema(itemName, true);
             });
+
+            // add an index for Comments, that is not related to any Stream
+            checkRediSearchSchema("comments:movies", false);
 
 
         } catch (URISyntaxException use) {

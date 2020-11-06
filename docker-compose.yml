@@ -88,6 +88,18 @@ services:
       - redis-service
     restart: always
 
+  comments-service:
+    build:
+      context: ./comments-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    networks:
+      - redis-microservices-network
+    depends_on:
+      - redis-service
+    restart: always
+
   ws-notifications-service:
       build:
         context: ./notifications-service-node

@@ -5,6 +5,8 @@ import DataStreamsToGraphRepository from "./DataStreamsToGraphRepository";
 import DataStreamsProducerRepository from "./DataStreamsProducerRepository";
 import DataStreamsRedisHashSyncRepository from "./DataStreamsRedisHashSyncRepository";
 
+import CommentsRepository from "./CommentsRepository";
+
 
 const repositories = {
   rdbmsRepository: RDBMSRepository,
@@ -13,6 +15,8 @@ const repositories = {
   dataStreamsToGraphRepository: DataStreamsToGraphRepository,
   dataStreamsProducerRepository: DataStreamsProducerRepository,
   dataStreamsRedisHashSyncRepository: DataStreamsRedisHashSyncRepository,
+
+  commentsRepository: CommentsRepository,
 
 };
 

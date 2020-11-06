@@ -2,7 +2,7 @@
   <div id="formContainer" >
 
 
-    <h1>{{ movie.title }} </h1>
+    <h1>{{ movie.title }} <small>(From MySQL)</small> </h1>
     <hr/>
 
         <b-alert 
@@ -107,15 +107,27 @@
     </b-form>
 
 
-    <div id="listContainer">
-      <b-table 
-        striped
-        hover
-        v-if="show"
-        :items="computedRecords"
-      >
-      </b-table>
-    </div>
+    <b-container class="mt-4">
+      <b-tabs content-class="mt-3">
+        <b-tab title="Actors" active>
+          <h5>Actors <small>(from MySQL)</small></h5>
+          <div id="listContainer">
+          <b-table 
+            striped
+            hover
+            v-if="show"
+            :items="computedRecords"
+          >
+          </b-table>
+        </div>
+        </b-tab>
+        <b-tab title="Comments">
+          <Comments :item_id="$route.params.id" />
+        </b-tab>
+      </b-tabs>
+    </b-container>
+
+
 
 
 
@@ -123,6 +135,8 @@
 </template>
 
 <script>
+import Comments from '@/components/Comments.vue';
+
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
 const RDBMSRepository = RepositoryFactory.get('rdbmsRepository')
 const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorRepository')
@@ -130,6 +144,7 @@ const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorReposi
 export default {
   name: "MovieForm",
   components: {
+    Comments,
   },
   data() {
     return {
@@ -140,8 +155,8 @@ export default {
         votes : null,
         rating : null,
         release_year : null,
-        callWithCache : false,
       },
+      callWithCache : false,
       ratings : {},
       actors: null,
       show: true,
