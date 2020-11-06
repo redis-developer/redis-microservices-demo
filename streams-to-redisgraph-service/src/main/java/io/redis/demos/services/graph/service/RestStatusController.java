@@ -58,5 +58,10 @@ public class RestStatusController {
         return result;
     }
 
+    @GetMapping("/executeQuery/{graphName}")
+    public ResultSet executeQuery(@PathVariable(name = "graphName") String graphName, @RequestHeader(name="query") String query) {
+        return redisService.executeQuery(graphName, query);
+    }
+
 
 }
