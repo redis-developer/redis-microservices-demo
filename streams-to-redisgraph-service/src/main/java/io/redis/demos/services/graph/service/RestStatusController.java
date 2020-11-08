@@ -3,7 +3,7 @@ package io.redis.demos.services.graph.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
+import com.redislabs.redisgraph.ResultSet;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
