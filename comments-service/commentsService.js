@@ -13,7 +13,7 @@ nconf.env();
 nconf.file({ file: (nconf.get('CONF_FILE') || './config.dev.json' ) });
 console.log(`\t Redis : ${nconf.get("REDIS_HOST")}:${nconf.get("REDIS_PORT")}`);
 
-const redisUrl = process.env.REDIS_URL || `redis://${nconf.get("REDIS_HOST")}:${nconf.get("REDIS_PORT")}`;
+const redisUrl = process.env.REDIS_URI || nconf.get("REDIS_URI");
 
 
 redisearch(redis);

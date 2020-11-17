@@ -31,6 +31,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
+    environment:
+      - REDIS_URI=redis://redis-service:6379
     networks:
       - redis-microservices-network
     restart: always
@@ -44,6 +46,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
+    environment:
+      - REDIS_URI=redis://redis-service:6379
     networks:
       - redis-microservices-network
     restart: always
@@ -69,6 +73,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
+    environment:
+      - REDIS_URI=redis://redis-service:6379
     networks:
       - redis-microservices-network
     depends_on:
@@ -82,6 +88,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8085:8085"
+    environment:
+      - REDIS_URI=redis://redis-service:6379
     networks:
       - redis-microservices-network
     depends_on:
@@ -94,6 +102,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8086:8086"
+    environment:
+      - REDIS_URI=redis://redis-service:6379
     networks:
       - redis-microservices-network
     depends_on:
@@ -106,6 +116,8 @@ services:
         dockerfile: Dockerfile
       ports:
         - "8888:8888"
+      environment:
+        - REDIS_URI=redis://redis-service:6379
       networks:
         - redis-microservices-network
       depends_on:
