@@ -9,6 +9,9 @@ This project shows how you can modernize a legacy application that use RDBMS wit
 * See how to run queries on Redis hashes using RediSearch commands (filter, sort, aggregate, and tull text search)
 * Extend MySQL Legacy model with movie comments store in Hash and queried using RediSearch commands
 * Push relationnoal data into RedisGraph
+* a Web frontend developped with Vue.js
+
+![Archi](./ui-redis-front-end/redis-front/public/imgs/overal-archi.png)
 
 
 If you want to use the Web Service cache demo that call the OMDB API you must:
