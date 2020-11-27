@@ -41,4 +41,4 @@ $ docker-compose down -v --rmi local --remove-orphans
 
 ## Deploy to Kubernetes
 
-You can also deploy the application to Kubernetes, see [Kubernetes Readme](.kubernetes/README.md)
+You can also deploy the application to Kubernetes, see [Kubernetes Readme](./kubernetes/README.md)
