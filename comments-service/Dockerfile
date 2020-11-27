@@ -7,7 +7,9 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-ENV REDIS_URI=redis://redis-service:6379
+ENV  REDIS_HOST=redis-service
+ENV  REDIS_PORT=6379
+ENV  REDIS_PASSWORD=
 
 EXPOSE 8086
 

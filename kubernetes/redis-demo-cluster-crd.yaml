@@ -1,0 +1,8 @@
+apiVersion: app.redislabs.com/v1
+kind: RedisEnterpriseCluster
+metadata:
+  name: "redis-enterprise"
+spec:
+  # Add fields here
+  nodes: 3
+  

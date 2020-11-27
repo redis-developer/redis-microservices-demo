@@ -1,0 +1,377 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-mysql
+  template:
+    metadata:
+      labels:
+        app: app-mysql
+        type: database
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-mysql:1.0.0 
+          ports:
+            - containerPort: 3306          
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-mysql  
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: app-mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-sql-rest-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-sql-rest-api
+  template:
+    metadata:
+      labels:
+        app: app-sql-rest-api
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-sql-rest-api:1.0.0
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://app-mysql:3306/inventory
+            - name: SPRING_DATASOURCE_USERNAME
+              value: mysqluser
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: mysqlpw
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-sql-rest-api
+spec:
+  selector:
+    app: app-sql-rest-api
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-caching
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-caching
+  template:
+    metadata:
+      labels:
+        app: app-caching
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-caching:1.0.0
+          ports:
+            - containerPort: 8084
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-caching
+spec:
+  selector:
+    app: app-caching
+  ports:
+    - port: 8084
+      targetPort: 8084
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-comments
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-comments
+  template:
+    metadata:
+      labels:
+        app: app-comments
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-comments:1.0.0
+          ports:
+            - containerPort: 8086
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-comments
+spec:
+  selector:
+    app: app-comments
+  ports:
+    - port: 8086
+      targetPort: 8086
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-db-to-streams
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-db-to-streams
+  template:
+    metadata:
+      labels:
+        app: app-db-to-streams
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-db-to-streams:1.0.0
+          ports:
+            - containerPort: 8082
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+            - name: DATABASE_HOSTNAME
+              value: app-mysql
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: DATABASE_NAME
+              value: inventory
+            - name: DATABASE_USER
+              value: debezium
+            - name: DATABASE_PASSWORD
+              value: dbz
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-db-to-streams
+spec:
+  selector:
+    app: app-db-to-streams
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-streams-to-redis-hashes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-streams-to-redis-hashes
+  template:
+    metadata:
+      labels:
+        app: app-streams-to-redis-hashes
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-streams-to-redis-hashes:1.0.0
+          ports:
+            - containerPort: 8085
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-streams-to-redis-hashes
+spec:
+  selector:
+    app: app-streams-to-redis-hashes
+  ports:
+    - port: 8085
+      targetPort: 8085
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-streams-to-redisgraph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-streams-to-redisgraph
+  template:
+    metadata:
+      labels:
+        app: app-streams-to-redisgraph
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/app-streams-to-redisgraph:1.0.0
+          ports:
+            - containerPort: 8083
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-streams-to-redisgraph
+spec:
+  selector:
+    app: app-streams-to-redisgraph
+  ports:
+    - port: 8083
+      targetPort: 8083
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-frontend
+  template:
+    metadata:
+      labels:
+        app: app-frontend
+    spec:
+      containers:
+        - name: app
+          image: redisdeveloper/rmdb-frontend:1.0.0 
+          ports:
+            - containerPort: 80
+          env:
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: port
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: service_name
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redb-movie-database
+                  key: password
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-frontend
+spec:
+  selector:
+    app: app-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+---

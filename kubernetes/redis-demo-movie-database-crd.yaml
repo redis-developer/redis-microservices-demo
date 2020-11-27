@@ -1,0 +1,14 @@
+apiVersion: app.redislabs.com/v1alpha1
+kind: RedisEnterpriseDatabase
+metadata:
+  name: movie-database
+spec:
+  modulesList:
+    - name: graph
+      version: 2.0.19
+    - name: search
+      version: 2.0.0
+  memorySize: 200MB
+  persistence: aofEverySecond
+  redisEnterpriseCluster:
+    name: redis-enterprise

@@ -1,4 +1,6 @@
 {
     "PORT": "8086",
-    "REDIS_URI" : "redis://redis-service:6379"
+    "REDIS_HOST" : "redis-service",
+    "REDIS_PORT" : 6379,
+    "REDIS_PASSWORD" : ""
 }

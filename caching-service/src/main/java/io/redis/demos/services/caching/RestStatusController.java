@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestMapping("/api/1.0/caching/")
+@RequestMapping({"/api/1.0/caching/", "/"})
 @RestController
 @CrossOrigin("*")
 @Slf4j

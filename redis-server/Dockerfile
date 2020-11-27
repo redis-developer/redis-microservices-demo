@@ -1,6 +1,6 @@
 # a customized version of https://hub.docker.com/r/redislabs/redismod/dockerfile
 
-FROM redislabs/redisearch:2.0.1 as redisearch
+FROM redislabs/redisearch:2.0.2 as redisearch
 FROM redislabs/redisgraph:2.2.5 as redisgraph
 FROM redislabs/redisgears:1.0.2
 
