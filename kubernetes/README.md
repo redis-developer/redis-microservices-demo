@@ -298,8 +298,8 @@ redis-enterprise-ui            LoadBalancer   10.91.243.120   34.72.231.180    8
 
 The most interesting services for the demonstration are:
 
-* `app-frontend` that exposes the application on port 80, so go to http://<EXTERNAL-IP>:/
-* `app-redis-insight` that exposes RedisInsight on port 8001, you can go to  http://<EXTERNAL-IP>:8001
+* `app-frontend` that exposes the application on port 80, so go to http://[]EXTERNAL-IP]/
+* `app-redis-insight` that exposes RedisInsight on port 8001, you can go to  http://[EXTERNAL-IP]:8001
 * `movie-database-load-balancer` that allows you to connect to the Movie Database outside the Kubernetes cluster, for example from your local environment.
 
 
