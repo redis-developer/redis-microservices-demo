@@ -62,10 +62,10 @@ You can find more information about [Redis Enterprise Kubernetes Operator-based 
 
 You have now installed the operator, you can create a cluster, that will create, configure and start all necessary pods.
 
-1. Go back in this **project folder**.
+1. Go back in this **project folder** (`redis-microservices-demo`).
 
     ```
-    > cd  redis-microservices-demo/Kubernetes
+    > cd  redis-microservices-demo/kubernetes
     ```
 1. Create the cluster
 
@@ -92,7 +92,40 @@ You have now installed the operator, you can create a cluster, that will create,
 
     Once all the nodes running you have successfully installed a 3 nodes cluster of Redis Enterprise.
 
-    Let's now create a Redis database with teh RediSearch and RedisGraph modules enabled.
+
+1. Check Redis Cluster Services
+
+    Run the following command:
+
+    ```bash
+    kubectl get services
+
+    NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
+    redis-enterprise      ClusterIP      None             <none>          9443/TCP,8001/TCP,8070/TCP   19m
+    redis-enterprise-ui   LoadBalancer   10.123.247.213   34.68.204.140   8443:32606/TCP               19m
+    ```
+
+    Redis Enterprise comes with a complete Web console to manage and monitor your cluster, you can use the `redis-enterprise-ui` service to access it, using the `EXTERNAL-IP` and port `8443`.
+
+1. Access the Redis Web Console
+
+    As described above you can access the Web Console. you need the administrator user and password. (The user is `kubectl get secret redis-enterprise -o jsonpath="{.data.username}"` defined in the `redis-demo-cluster-crd.yaml` file). These data are stored in a secret associated to the Redis Cluster.
+
+    ```
+    > kubectl get secret redis-enterprise -o jsonpath="{.data.username}" | base64 --decode
+
+    admin@demo.com
+
+    > kubectl get secret redis-enterprise -o jsonpath="{.data.password}" | base64 --decode
+
+    Hp0a1PYQ
+
+    ```    
+
+    Do not create the database from the UI, you will use another Kubernetes custom resource in the next step.
+
+
+Let's now create a Redis database with teh RediSearch and RedisGraph modules enabled.
 
 
 ## Create a Redis Database
@@ -124,7 +157,9 @@ The follow steps will use the operator to create the database named `movie-datab
     The name of the database service is `movie-database`, the redis port is `15291` will vary depending of your installation.
     As  you can see the database is not exposed externally (no `EXTERNAL-IP`).
     This is not an issue since the application will be deployed in the same Kubernetes environment.
-    In the last section of this document you will learn how to expose and access the Web Console, the database from outside.
+
+    If you go back into the Web Console you will see the newly created database with modules, persistence and replication enabled.
+
 
 1. Retrieve the connection string
 
@@ -228,9 +263,10 @@ The application is made of the following services:
 * Streams to Redis Graph
 * Comments service
 * Web UI
+* RedisInsight
 
 
-## Deploy and use the application
+## Deploy the application
 
 The `redis-demo-application-deployment.yaml` contains the deployment information for the complete demonstration. Run the following command to deploy the application to your Kubernetes cluster:
 
@@ -243,22 +279,42 @@ You can check the status of the services using the following command:
 ```bash
 > kubectl get services
 
-NAME                          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                      AGE
-app-caching                   LoadBalancer   10.123.245.210   35.226.137.114   8084:30306/TCP               4m56s
-app-comments                  LoadBalancer   10.123.243.24    35.223.51.101    8086:31707/TCP               4m55s
-app-db-to-streams             LoadBalancer   10.123.253.180   34.66.133.20     8082:31647/TCP               4m54s
-app-frontend                  LoadBalancer   10.123.247.226   34.68.132.248    80:32405/TCP                 4m52s
-app-mysql                     ClusterIP      None             <none>           3306/TCP                     4m58s
-app-sql-rest-api              LoadBalancer   10.123.254.19    34.68.204.140    8081:30735/TCP               4m57s
-app-streams-to-redis-hashes   LoadBalancer   10.123.245.160   34.122.100.79    8085:30307/TCP               4m53s
-app-streams-to-redisgraph     LoadBalancer   10.123.252.19    35.224.204.24    8083:32008/TCP               4m52s
-movie-database                ClusterIP      10.123.253.207   <none>           18132/TCP                    1h
-movie-database-headless       ClusterIP      None             <none>           18132/TCP                    1h
-redis-enterprise              ClusterIP      None             <none>           9443/TCP,8001/TCP,8070/TCP   1h
-redis-enterprise-ui           ClusterIP      10.123.246.227   <none>           8443/TCP                     1h
+NAME                           TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                      AGE
+app-caching                    LoadBalancer   10.91.247.105   104.155.182.93   8084:30769/TCP               14m
+app-comments                   LoadBalancer   10.91.245.100   34.71.233.138    8086:32376/TCP               14m
+app-db-to-streams              LoadBalancer   10.91.254.174   35.223.218.209   8082:30967/TCP               14m
+app-frontend                   LoadBalancer   10.91.255.6     34.122.112.62    80:32642/TCP                 14m
+app-mysql                      ClusterIP      None            <none>           3306/TCP                     14m
+app-redis-insight              LoadBalancer   10.91.251.182   104.154.60.232   8001:31559/TCP               14m
+app-sql-rest-api               LoadBalancer   10.91.248.8     35.238.133.156   8081:30046/TCP               14m
+app-streams-to-redis-hashes    LoadBalancer   10.91.244.194   35.226.226.187   8085:30081/TCP               14m
+app-streams-to-redisgraph      LoadBalancer   10.91.255.210   34.71.45.36      8083:31973/TCP               14m
+movie-database                 ClusterIP      10.91.255.235   <none>           11293/TCP                    17m
+movie-database-headless        ClusterIP      None            <none>           11293/TCP                    17m
+movie-database-load-balancer   LoadBalancer   10.91.245.78    34.122.204.226   11293:30444/TCP              17m
+redis-enterprise               ClusterIP      None            <none>           9443/TCP,8001/TCP,8070/TCP   88m
+redis-enterprise-ui            LoadBalancer   10.91.243.120   34.72.231.180    8443:30352/TCP               88m
 ```
 
-When all the services are up with an active `EXTERNAL-IP` you can access the application using the IP and address of the `app-frontend` (`34.68.132.248` in the example above). 
+The most interesting services for the demonstration are:
+
+* `app-frontend` that exposes the application on port 80, so go to http://<EXTERNAL-IP>:/
+* `app-redis-insight` that exposes RedisInsight on port 8001, you can go to  http://<EXTERNAL-IP>:8001
+* `movie-database-load-balancer` that allows you to connect to the Movie Database outside the Kubernetes cluster, for example from your local environment.
 
 
-## Exposing
+**Connect RedisInsight to your database**
+
+In RedisInsight:
+
+1. Click on "Add Redis Database" button:
+1. Click on "Connect to Redis Database / Using Hostname and Port"
+1. Enter "`movie-database`" for the Host
+1. Enter the port exposed by the `movie-database` service (in the example above it is `11293`)
+1. Set Username to `default`
+1. Set the password to the value returned by the command `kubectl get secret redb-movie-database  -o jsonpath={.data.password} | base64 --decode`
+
+
+You can now use RedisInsight to interact with the movie database.
+
+

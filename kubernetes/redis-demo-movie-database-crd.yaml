@@ -10,5 +10,7 @@ spec:
       version: 2.0.0
   memorySize: 200MB
   persistence: aofEverySecond
+  replication: true
   redisEnterpriseCluster:
     name: redis-enterprise
+    

@@ -5,4 +5,10 @@ metadata:
 spec:
   # Add fields here
   nodes: 3
-  
+  persistentSpec:
+    enabled: true
+  uiServiceType: LoadBalancer
+  username: admin@demo.com
+  servicesRiggerSpec:
+    databaseServiceType: load_balancer,cluster_ip,headless
+---

@@ -375,3 +375,37 @@ spec:
       targetPort: 80
   type: LoadBalancer
 ---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-redis-insight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-redis-insight
+  template:
+    metadata:
+      labels:
+        app: app-redis-insight
+    spec:
+      containers:
+        - name: app
+          image: redislabs/redisinsight:1.8.1 
+          ports:
+            - containerPort: 8001
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-redis-insight
+spec:
+  selector:
+    app: app-redis-insight
+  ports:
+    - port: 8001
+      targetPort: 8001
+  type: LoadBalancer
+---
