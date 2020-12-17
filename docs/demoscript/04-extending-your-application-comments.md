@@ -20,5 +20,29 @@ Using Redis you and a new micro service you can do it easily. (see `comments-ser
 
 The comment service use a RediSearch index to query the data an retrieve the comment by movie and date.
 
+
+In the Redis CLI or RedisInsight you can look at the index and run the following commands:
+
+
+Get the list of indexes
+
+```
+> FT._LIST
+```
+
+Look at comments index info
+
+```
+> FT.INFO "ms:search:index:comments:movies"
+```
+
+List all comments for movie #1 (Guardians of the Galaxy) order by time stamp descending:
+
+```
+> FT.SEARCH "ms:search:index:comments:movies" "@movie_id:[1 1]" SORTBY timestamp DESC
+```
+
+As you can see it is possible to filter and sort Redis data by value (hash fields), and it is very easy!
+
 ---
 Next: [CDC with Debezium and Redis Streams](05-cdc-with-debezium-and-streams.md)

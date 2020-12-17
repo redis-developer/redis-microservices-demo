@@ -28,7 +28,8 @@ FT.SEARCH ms:search:index:movies "wars -Strip -Sith" RETURN 1 title
 FT.SEARCH ms:search:index:movies "redis " RETURN 2 title plot
 ```
 
-```FT.AGGREGATE ms:search:index:movies: "@release_year:2015" GROUPBY 1 @genre REDUCE COUNT 0 AS sum SORTBY 2 @genre ASC MAX 10
+```
+FT.AGGREGATE ms:search:index:movies: "@release_year:2015" GROUPBY 1 @genre REDUCE COUNT 0 AS sum SORTBY 2 @genre ASC MAX 10
 ```
 
 The aggregation query is used in 2 places in the demonstration:
@@ -40,4 +41,4 @@ The aggregation query is used in 2 places in the demonstration:
 You can learn more about Redis query and indexing capabilities in the [RediSearch tutorial](https://github.com/RediSearch/redisearch-getting-started/blob/master/docs/001-introduction.md).
 
 ---
-Next: [Consume Streams and push data into Redis Hashes](07-.md)
+Next: [Consume Streams and push data into RedisGraph](07-consume-streams-to-redish-graph.md)
