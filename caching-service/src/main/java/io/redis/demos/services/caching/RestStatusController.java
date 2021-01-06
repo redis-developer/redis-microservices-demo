@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestMapping("/api/1.0/caching/")
+@RequestMapping({"/api/1.0/caching/", "/"})
 @RestController
 @CrossOrigin("*")
 @Slf4j
@@ -79,4 +79,10 @@ public class RestStatusController {
         result.put("value", webServiceCachingService.getOMDBAPIKey());
         return result;
     }
+
+    @GetMapping("/stats/omdb_api")
+    public Map<String,Object> getOmdbApiStats() throws IOException {
+        return webServiceCachingService.getOMDBAPIStats();
+    }
+
 }

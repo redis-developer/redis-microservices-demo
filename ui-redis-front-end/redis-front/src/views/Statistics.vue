@@ -29,7 +29,7 @@
 
 <script>
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
-const RediSearchRepository = RepositoryFactory.get('dataStreamsAutoCompleteRepository');
+const RediSearchRepository = RepositoryFactory.get('dataStreamsRedisHashSyncRepository');
 
 import * as d3 from "d3";
 import _ from "lodash";

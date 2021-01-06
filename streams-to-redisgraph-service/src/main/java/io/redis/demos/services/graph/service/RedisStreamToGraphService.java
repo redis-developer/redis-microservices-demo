@@ -23,9 +23,14 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RedisStreamToGraphService {
 
-    // URI used to connect to Redis database
-    @Value("${redis.uri}")
-    private String redisUri;
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private int redisPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
 
     // Stream lists
     @Value("${redis.streams}")
@@ -57,14 +62,13 @@ public class RedisStreamToGraphService {
 
     @PostConstruct
     private void afterConstruct(){
-        try {
-            log.info("Create Jedis Pool with {} ", redisUri);
-            URI redisConnectionString = new URI(redisUri);
-            jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
-            graph = new RedisGraph(jedisPool);
-        } catch (URISyntaxException use) {
-            log.error("Error creating JedisPool {}", use.getMessage());
+        log.info("Create Jedis Pool with {}:{} ", redisHost, redisPort);
+        if (redisPassword != null && redisPassword.trim().isEmpty()) {
+            redisPassword = null;
         }
+        jedisPool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort, 5000, redisPassword );
+
+        graph = new RedisGraph(jedisPool);
         log.info("Will look at {} streams", streamList);
     }
 
