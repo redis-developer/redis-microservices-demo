@@ -60,6 +60,12 @@ Vue.use(VueRouter)
   },
 
   {
+    path: '/search/movies/faceted',
+    name: 'SearchMoviesFaceted',
+    component: () => import('../views/SearchMoviesFaceted.vue')
+  },
+
+  {
     path: '/aggregations/',
     name: 'Aggregations',
     component: () => import('../views/Aggregations.vue')

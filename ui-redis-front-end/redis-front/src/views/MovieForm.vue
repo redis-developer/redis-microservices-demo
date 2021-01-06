@@ -2,7 +2,7 @@
   <div id="formContainer" >
 
 
-    <h1>{{ movie.title }} </h1>
+    <h1>{{ movie.title }} <small>(From MySQL)</small> </h1>
     <hr/>
 
         <b-alert 
@@ -62,25 +62,29 @@
           </b-form-group>
 
           <b-button type="submit" variant="primary">Submit</b-button>
-          &nbsp;
-          <b-button type="reset" variant="">Reset</b-button>
-
+          
           <hr/>
 
+
+
           <div v-if="ratings" >
-          <b-icon-reply class="large" @click="getRatings" />  
-            -  IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
-            - Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
-            - Metacritic : <span v-html='ratings["Metacritic"]' />
+            <b-button name="call-ws" variant="success" title="Call Web Service"><b-icon-reply class="large" @click="getRatings" />  </b-button>
+           
+              IMDB : <span v-html='ratings["Internet Movie Database"]' /> 
+              | Rotten Tomatoes : <span v-html='ratings["Rotten Tomatoes"]' />
+              | Metacritic : <span v-html='ratings["Metacritic"]' />
           <template>
             <div>
             <b-form-checkbox v-model="callWithCache" name="check-button" switch>  
-              Redis Cache  ( {{ratings.elapsedTimeMs}} ms)
+              Redis Cache  ( {{ratings.elapsedTimeMs}} ms  | <small>OMDB API Calls:</small> {{ratings.omdbApiCalls}})
             </b-form-checkbox>
             </div>
           </template>
           </div>
-
+          <div v-if="!movie.imdb_id" class="small">
+            <div>Cannot use OMDB API on this movie (IMDB Id not set)</div>
+            <div>Please select another movie</div>
+          </div>
     </b-col>
     <b-col>
       <div>
@@ -103,15 +107,27 @@
     </b-form>
 
 
-    <div id="listContainer">
-      <b-table 
-        striped
-        hover
-        v-if="show"
-        :items="computedRecords"
-      >
-      </b-table>
-    </div>
+    <b-container class="mt-4">
+      <b-tabs content-class="mt-3">
+        <b-tab title="Actors" active>
+          <h5>Actors <small>(from MySQL)</small></h5>
+          <div id="listContainer">
+          <b-table 
+            striped
+            hover
+            v-if="show"
+            :items="computedRecords"
+          >
+          </b-table>
+        </div>
+        </b-tab>
+        <b-tab title="Comments">
+          <Comments :item_id="$route.params.id" />
+        </b-tab>
+      </b-tabs>
+    </b-container>
+
+
 
 
 
@@ -119,6 +135,8 @@
 </template>
 
 <script>
+import Comments from '@/components/Comments.vue';
+
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
 const RDBMSRepository = RepositoryFactory.get('rdbmsRepository')
 const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorRepository')
@@ -126,6 +144,7 @@ const CacheInvalidatorRepository = RepositoryFactory.get('cacheInvalidatorReposi
 export default {
   name: "MovieForm",
   components: {
+    Comments,
   },
   data() {
     return {
@@ -136,8 +155,8 @@ export default {
         votes : null,
         rating : null,
         release_year : null,
-        callWithCache : false,
       },
+      callWithCache : false,
       ratings : {},
       actors: null,
       show: true,
@@ -174,6 +193,9 @@ export default {
         this.ratings = undefined;
         const {data} = await CacheInvalidatorRepository.getRatings(this.movie.imdb_id, this.callWithCache);
         this.ratings = data;
+      } else {
+        this.ratings = null;
+        console.log(`Cannot call OMDB Web Service, the movie "${this.movie.title}": IMDB_ID value not set.`);
       }
     }
   },

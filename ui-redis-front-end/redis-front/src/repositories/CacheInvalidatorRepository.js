@@ -43,6 +43,10 @@ export default {
     return Repository.get(`${resource}/configuration/omdb_api`);
   }, 
 
+  getOmdbApiStats() {
+    return Repository.get(`${resource}/stats/omdb_api`);
+  }, 
+
   getServiceInfo(){
     return resource;
   }

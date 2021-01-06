@@ -1,0 +1,14 @@
+apiVersion: app.redislabs.com/v1
+kind: RedisEnterpriseCluster
+metadata:
+  name: "redis-enterprise"
+spec:
+  # Add fields here
+  nodes: 3
+  persistentSpec:
+    enabled: true
+  uiServiceType: LoadBalancer
+  username: admin@demo.com
+  servicesRiggerSpec:
+    databaseServiceType: load_balancer,cluster_ip,headless
+---

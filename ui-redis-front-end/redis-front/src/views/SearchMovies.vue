@@ -16,8 +16,12 @@
       </b-input-group>
     </b-form>
 
-
-<hr>
+<div class="mb-2 mt-2 text-justify">
+      {{ searchResult.meta.totalResults }} movies found in {{ searchResult.meta.elaspedTimeMs }} ms
+      <span v-if="searchResult.meta.totalResults > 0" >
+      , showing {{ searchResult.meta.offset + 1 }} to {{ searchResult.meta.limit }}
+      </span>
+</div>
 
 <b-row>
   <div 
@@ -36,11 +40,18 @@
        <img width=130 :src="doc.body.poster" />
      </b-card-text>
 
-      <template v-slot:footer>
-        
-        <b-button @click="goToMovie( doc.body.movie_id)">
-          View
-        </b-button>
+      <template v-slot:footer >
+        <b-row class="small">
+        <b-col>
+        {{ doc.body.genre }}
+        </b-col>
+        <b-col>
+          <b-button size="sm" @click="goToMovie( doc.body.movie_id)">View</b-button>
+        </b-col>
+        <b-col class="text-right">
+        {{ Number.parseFloat(doc.body.rating).toFixed(1) }}
+        </b-col>
+        </b-row>
       </template>
 
     </b-card>
@@ -55,22 +66,24 @@
 
 <script>
 import { RepositoryFactory } from './../repositories/RepositoryFactory'
-const RediSearchRepository = RepositoryFactory.get('dataStreamsAutoCompleteRepository');
+const RediSearchRepository = RepositoryFactory.get('dataStreamsRedisHashSyncRepository');
 
 
 export default {
   name: "Search",
   data() {
     return {
-      searchQuery : "",
+      searchQuery : "*",
       searchResult : {},
     }
   },
   created() {
-        this.$parent.contextualHelp = 
+    this.$parent.contextualHelp = 
         "This search form is based on RediSearch on the Movie index (<i>\"idx:ms:search:index:movies\"</<i>).<br>You can use various query such as:"+
         "<ul><li>wars -CIVIL</li></ul>"+
         "<p>Update, create a movie and you will see that the index is updated. (If the <a href='/services'>service</a> is running)</p>";
+
+    this.search();
 
   },
   methods : {
