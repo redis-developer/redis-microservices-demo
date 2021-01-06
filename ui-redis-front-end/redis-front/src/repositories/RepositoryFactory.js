@@ -3,7 +3,9 @@ import CacheInvalidatorRepository from "./CacheInvalidatorRepository";
 import DataStreamsToGraphRepository from "./DataStreamsToGraphRepository";
 
 import DataStreamsProducerRepository from "./DataStreamsProducerRepository";
-import DataStreamsAutoCompleteRepository from "./DataStreamsAutoCompleteRepository";
+import DataStreamsRedisHashSyncRepository from "./DataStreamsRedisHashSyncRepository";
+
+import CommentsRepository from "./CommentsRepository";
 
 
 const repositories = {
@@ -12,7 +14,9 @@ const repositories = {
   
   dataStreamsToGraphRepository: DataStreamsToGraphRepository,
   dataStreamsProducerRepository: DataStreamsProducerRepository,
-  dataStreamsAutoCompleteRepository: DataStreamsAutoCompleteRepository,
+  dataStreamsRedisHashSyncRepository: DataStreamsRedisHashSyncRepository,
+
+  commentsRepository: CommentsRepository,
 
 };
 

@@ -2,21 +2,16 @@
 
 This project shows how you can modernize a legacy application that use RDBMS with Redis.
 
-* Caching: take some data out of RDBMS
+* Caching: Call Web Service and cache the result in Redis
+* CDC to RediStreams: Capture MySQL transactionsd and send them to Redis Streams
 * Use RediSearch to index relational data and provides autocomplete feature
-* Use Redis Graph to provide a new way to navigate and use the data
-* Build an event based architecture using Redis Streams
+* Store and Index data in Redis: copy the events from Streams and put them in a Redis Hash (Movie/Actors), this could be used as a cache or maine datastore 
+* See how to run queries on Redis hashes using RediSearch commands (filter, sort, aggregate, and tull text search)
+* Extend MySQL Legacy model with movie comments store in Hash and queried using RediSearch commands
+* Push relationnoal data into RedisGraph
+* a Web frontend developped with Vue.js
 
-
-### 1- [Cache Invalidation](cache-invalidator-service)
-
-This Spring Boot Application is a service that use Debezium in an embedded mode and listen to CDC event from MySQL.
-Depending of the configuration, the table content is automatically cached as a hash or just invalidated based on the table primary key.
-
-
-
-
-## Build and Run with Docker
+![Archi](./ui-redis-front-end/redis-front/public/imgs/overal-archi.png)
 
 
 If you want to use the Web Service cache demo that call the OMDB API you must:
@@ -25,6 +20,8 @@ If you want to use the Web Service cache demo that call the OMDB API you must:
 
 2. When the applications is ready go to the "Services" page and enter the key in the configuration screen, this will save the key in a Redis Hash (lool at `ms:config` during the demo)
 
+
+## Build and Run with Docker
 
 
 ```
@@ -41,3 +38,7 @@ Cleanup
 $ docker-compose down -v --rmi local --remove-orphans
 
 ```
+
+## Deploy to Kubernetes
+
+You can also deploy the application to Kubernetes, see [Kubernetes Readme](./kubernetes/README.md)

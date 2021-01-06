@@ -26,9 +26,14 @@ import java.util.Map;
 @Service
 public class WebServiceCachingService {
 
-    // URI used to connect to Redis database
-    @Value("${redis.uri}")
-    private String redisUri;
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private int redisPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
 
     // OMDB API KEY
     @Value("${omdb.api}")
@@ -40,6 +45,7 @@ public class WebServiceCachingService {
     public static final String KEY_PREFIX = "ms:cache:ws:";
     public static final String KEY_CONFIG = "ms:config";
     public static final String OMDB_API_KEY = "OMDB_API_KEY";
+    public static final String OMDB_API_CALLS = "OMDB_API_CALLS";
     public static final String OMDB_API_URL = "http://www.omdbapi.com/?apikey=";
     public static final int TTL = 120;
     ObjectMapper jsonMapper = new ObjectMapper();
@@ -49,13 +55,11 @@ public class WebServiceCachingService {
 
     @PostConstruct
     private void afterConstruct(){
-        try {
-            log.info("Create Jedis Pool with {} ", redisUri);
-            URI redisConnectionString = new URI(redisUri);
-            jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
-        } catch (URISyntaxException use) {
-            log.error("Error creating JedisPool {}", use.getMessage());
+        log.info("Create Jedis Pool with {}:{} ", redisHost, redisPort);
+        if (redisPassword != null && redisPassword.trim().isEmpty()) {
+            redisPassword = null;
         }
+        jedisPool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort, 5000, redisPassword );
     }
 
     /**
@@ -91,6 +95,8 @@ public class WebServiceCachingService {
                     ResponseHandler<String> responseHandler = new BasicResponseHandler();
 
                     String WsCall = httpClient.execute(getRequest, responseHandler);
+                    // increment the counter of call
+                    jedis.hincrBy(KEY_CONFIG, OMDB_API_CALLS, 1);
 
                     Map<String, Object> map = jsonMapper.readValue(WsCall, Map.class);
                     List<Map<String, String>> ratings = (List<Map<String, String>>) map.get("Ratings");
@@ -102,9 +108,16 @@ public class WebServiceCachingService {
 
                     returnValue.putAll(ratingAsMap);
 
-                    jedis.hset(restCallKey, returnValue);
-                    jedis.expire(restCallKey, TTL);
+                    // Set the value into Redis only if the cache is enabled
+                    if (withCache) {
+                        jedis.hset(restCallKey, returnValue);
+                        jedis.expire(restCallKey, TTL);
+                    }
                 }
+
+                // get the total number of calls to the OMDB API
+                returnValue.put("omdbApiCalls" , jedis.hget(KEY_CONFIG, OMDB_API_CALLS));
+
 
             } catch(HttpResponseException e){
                 // Small hack to keep it simple
@@ -128,19 +141,26 @@ public class WebServiceCachingService {
      * @return
      */
     public String getOMDBAPIKey(){
-        if (omdbAPIKEY == null){
+        if (omdbAPIKEY == null || omdbAPIKEY.isEmpty()){
             log.info("Load omdbAPIKEY from Redis Configuration");
-            Jedis jedis = null;
-            try {
-                jedis = jedisPool.getResource();
+            try (Jedis jedis = jedisPool.getResource()) {
                 omdbAPIKEY = jedis.hget(KEY_CONFIG,OMDB_API_KEY);
-            } finally {
-                if (jedis != null){
-                    jedis.close();
-                }
             }
         }
         return omdbAPIKEY;
+    }
+
+    public Map<String, Object> getOMDBAPIStats(){
+        Map<String, Object> result = new HashMap<>();
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            List<String> values = jedis.hmget(KEY_CONFIG, OMDB_API_KEY, OMDB_API_CALLS);
+            result.put(OMDB_API_KEY, values.get(0));
+            result.put(OMDB_API_CALLS, values.get(1)==null?"0": Integer.parseInt(values.get(1)));
+        }
+
+
+        return result;
     }
 
     /**
