@@ -11,9 +11,18 @@ nconf.argv();
 nconf.env();
 
 nconf.file({ file: (nconf.get('CONF_FILE') || './config.dev.json' ) });
-console.log(`\t Redis : ${nconf.get("REDIS_HOST")}:${nconf.get("REDIS_PORT")}`);
 
-const redisUrl = process.env.REDIS_URL || `redis://${nconf.get("REDIS_HOST")}:${nconf.get("REDIS_PORT")}`;
+const redisHost = process.env.REDIS_HOST || nconf.get("REDIS_HOST");
+const redisPort = process.env.REDIS_PORT || nconf.get("REDIS_PORT");
+const redisPassword = process.env.REDIS_PASSWORD || nconf.get("REDIS_PASSWORD");
+
+
+let redisUrl = `redis://${redisHost}:${redisPort}`
+console.log(`\t Redis : ${redisUrl}`);
+
+if (redisPassword) {
+    redisUrl = `redis://default:${redisPassword}@${redisHost}:${redisPort}`
+}
 
 
 redisearch(redis);

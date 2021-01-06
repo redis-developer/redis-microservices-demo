@@ -41,9 +41,14 @@ public class StreamsToRediSearch extends KeysPrefix {
     private final static String DOC_PREFIX_ACTOR = "ms:docs:actors:";
     private final static String DOC_PREFIX_MOVIE_COMMENTS = "ms:comments:movie:";
 
-    // URI used to connect to Redis database
-    @Value("${redis.uri}")
-    private String redisUri;
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private int redisPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
 
     // Stream lists
     @Value("${redis.streams}")
@@ -132,25 +137,23 @@ public class StreamsToRediSearch extends KeysPrefix {
         groupNameSuggest = groupNamePrefix.concat(".suggest");
         groupNameSearch = groupNamePrefix.concat(".index");
 
-        try {
-            log.info("Create Jedis Pool with {} ", redisUri);
-            URI redisConnectionString = new URI(redisUri);
-            jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
-
-            // Using stream to create the index (for CDC based data)
-            streamList.forEach(streamKey -> {
-                String[] s = streamKey.split(":");
-                String itemName = s[s.length-1];
-                checkRediSearchSchema(itemName, true);
-            });
-
-            // add an index for Comments, that is not related to any Stream
-            checkRediSearchSchema("comments:movies", false);
-
-
-        } catch (URISyntaxException use) {
-            log.error("Error creating JedisPool {}", use.getMessage());
+        log.info("Create Jedis Pool with {}:{} ", redisHost, redisPort);
+        if (redisPassword != null && redisPassword.trim().isEmpty()) {
+            redisPassword = null;
         }
+        jedisPool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort, 5000, redisPassword );
+
+
+        // Using stream to create the index (for CDC based data)
+        streamList.forEach(streamKey -> {
+            String[] s = streamKey.split(":");
+            String itemName = s[s.length-1];
+            checkRediSearchSchema(itemName, true);
+        });
+
+        // add an index for Comments, that is not related to any Stream
+        checkRediSearchSchema("comments:movies", false);
+
         log.info("Will look at {} streams", streamList);
     }
 

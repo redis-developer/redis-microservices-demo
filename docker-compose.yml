@@ -1,7 +1,7 @@
 version: '3.7'
 services:
 
-  redis-service:
+  app-redis:
     build:
       context: ./redis-server
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
       - redis-microservices-network
     restart: always
 
-  mysql-debezium-service:
+  app-mysql:
     build:
       context: ./mysql-database
       dockerfile: Dockerfile
@@ -25,79 +25,103 @@ services:
       - redis-microservices-network
     restart: always
 
-  db-to-streams-service:
+  app-db-to-streams:
     build:
       context: ./db-to-streams-service
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
+    environment:
+      - REDIS_HOST=app-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
     networks:
       - redis-microservices-network
     restart: always
     depends_on:
-      - mysql-debezium-service
-      - redis-service
+      - app-mysql
+      - app-redis
 
-  streams-to-redisgraph-service:
+  app-streams-to-redisgraph:
     build:
       context: ./streams-to-redisgraph-service
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
+    environment:
+      - REDIS_HOST=app-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
     networks:
       - redis-microservices-network
     restart: always
     depends_on:
-      - mysql-debezium-service
-      - redis-service
+      - app-mysql
+      - app-redis
 
-  sql-rest-api:
+  app-sql-rest-api:
     build:
       context: ./sql-rest-api
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://app-mysql:3306/inventory
+      - SPRING_DATASOURCE_USERNAME=mysqluser
+      - SPRING_DATASOURCE_PASSWORD=mysqlpw
     networks:
       - redis-microservices-network
     depends_on:
-      - mysql-debezium-service
+      - app-mysql
     restart: always
 
-  caching-service:
+  app-caching:
     build:
       context: ./caching-service
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
+    environment:
+      - REDIS_HOST=app-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
     networks:
       - redis-microservices-network
     depends_on:
-      - mysql-debezium-service
-      - redis-service
+      - app-mysql
+      - app-redis
     restart: always
 
-  streams-to-redisearch-service:
+  app-streams-to-redis-hashes:
     build:
       context: ./streams-to-redisearch-service
       dockerfile: Dockerfile
     ports:
       - "8085:8085"
+    environment:
+      - REDIS_HOST=app-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
     networks:
       - redis-microservices-network
     depends_on:
-      - redis-service
+      - app-redis
     restart: always
 
-  comments-service:
+  app-comments:
     build:
       context: ./comments-service
       dockerfile: Dockerfile
     ports:
       - "8086:8086"
+    environment:
+      - REDIS_HOST=app-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
     networks:
       - redis-microservices-network
     depends_on:
-      - redis-service
+      - app-redis
     restart: always
 
   ws-notifications-service:
@@ -106,13 +130,17 @@ services:
         dockerfile: Dockerfile
       ports:
         - "8888:8888"
+      environment:
+        - REDIS_HOST=app-redis
+        - REDIS_PORT=6379
+        - REDIS_PASSWORD=
       networks:
         - redis-microservices-network
       depends_on:
-        - redis-service
+        - app-redis
       restart: always
       
-  front-end:
+  app-frontend:
     build:
       context: ./ui-redis-front-end/redis-front
       dockerfile: Dockerfile
@@ -121,13 +149,13 @@ services:
     networks:
       - redis-microservices-network
     depends_on:
-      - redis-service
-      - mysql-debezium-service
-      - streams-to-redisgraph-service
-      - streams-to-redisearch-service
-      - db-to-streams-service
-      - caching-service
-      - sql-rest-api
+      - app-redis
+      - app-mysql
+      - app-streams-to-redisgraph
+      - app-streams-to-redis-hashes
+      - app-db-to-streams
+      - app-caching
+      - app-sql-rest-api
     restart: always
 
 networks:
