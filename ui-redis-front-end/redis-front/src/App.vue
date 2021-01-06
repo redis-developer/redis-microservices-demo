@@ -2,7 +2,7 @@
   <div id="app">
 
 <div style="margin-bottom:10px">
-  <b-navbar toggleable="lg" type="dark" variant="dark">
+  <b-navbar toggleable="lg" type="dark" variant="dark" fixed="top" >
     <b-navbar-brand style="margin-left:90px" to="/" > RMDb</b-navbar-brand>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
@@ -16,6 +16,7 @@
         <b-nav-item><img src="/imgs/redis-logo.svg" height="30" /></b-nav-item>  
         <b-nav-item-dropdown text="Search " right>     <!-- Using 'button-content' slot -->
           <b-dropdown-item to="/search/movies" > <b-icon-camera-video /> Movies</b-dropdown-item>
+          <b-dropdown-item to="/search/movies/faceted" > <b-icon-camera-video /> Movies(Faceted)</b-dropdown-item>
           <b-dropdown-item to="/search/actors" > <b-icon-people-circle />  Actors</b-dropdown-item>
           <b-dropdown-item to="/autocomplete" >Autocomplete</b-dropdown-item>
         </b-nav-item-dropdown>
@@ -65,7 +66,7 @@
   </b-popover>
 </div>
 
-<a href="https://github.com/tgrall/redis-microservices-demo"><img src="/imgs/forkme_left_red.svg" style="position:absolute;top:0;left:0;" alt="Fork me on GitHub"></a>
+<a href="https://github.com/tgrall/redis-microservices-demo"><img src="/imgs/forkme_left_red.svg" style="position:absolute;top:0;left:0;z-index:2000;" alt="Fork me on GitHub"></a>
 
   </div>
 </template>
@@ -114,6 +115,9 @@ let ws = null;
 </script>
 
 <style>
+body { padding-top: 70px; }
+
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

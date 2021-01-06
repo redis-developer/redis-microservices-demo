@@ -20,9 +20,14 @@ import java.util.stream.Collectors;
 @Service
 public class RedisCacheService {
 
-    // URI used to connect to Redis database
-    @Value("${redis.uri}")
-    private String redisUri;
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private int redisPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
 
     // Should the system set the value when a table is updated ?
     @Value("${redis.setValue}")
@@ -39,13 +44,11 @@ public class RedisCacheService {
 
     @PostConstruct
     private void afterConstruct(){
-        try {
-            log.info("Create Jedis Pool with {} ", redisUri);
-            URI redisConnectionString = new URI(redisUri);
-            jedisPool = new JedisPool(new JedisPoolConfig(), redisConnectionString);
-        } catch (URISyntaxException use) {
-            log.error("Error creating JedisPool {}", use.getMessage());
+        log.info("Create Jedis Pool with {}:{} ", redisHost, redisPort);
+        if (redisPassword != null && redisPassword.trim().isEmpty()) {
+            redisPassword = null;
         }
+        jedisPool = new JedisPool(new JedisPoolConfig(), redisHost, redisPort, 5000, redisPassword );
     }
 
 

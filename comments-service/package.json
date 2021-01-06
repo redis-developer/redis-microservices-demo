@@ -1,0 +1,35 @@
+{
+  "name": "movie-comments-service",
+  "version": "1.0.0",
+  "description": "Commenting service for Redis Movie Database application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=8.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redis-developer/redis-microservices-demo.git"
+  },
+  "keywords": [
+    "redis",
+    "redisearch",
+    "node"
+  ],
+  "author": "Tugdual Grall",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/redis-developer/redis-microservices-demo/issues"
+  },
+  "homepage": "https://github.com/redis-developer/redis-microservices-demo#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "redis": "^3.0.2",
+    "redis-redisearch": "stockholmux/node_redis-redisearch",
+    "nconf": "^0.10.0"
+  }
+}

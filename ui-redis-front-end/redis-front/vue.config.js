@@ -1,6 +1,12 @@
 module.exports = {
     devServer: {
         proxy: {
+            '^/api/comments': {
+                target: 'http://localhost:8086/api/1.0/comments',
+                ws: true,
+                changeOrigin: true,
+                pathRewrite: {"^/api/comments" : "/"}          
+                },
             '^/api/fulltext': {
             target: 'http://localhost:8085/api/1.0/search-service',
             ws: true,

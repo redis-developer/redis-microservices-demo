@@ -23,6 +23,7 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         log.info("Start Application...");
+        log.info("V101");
     }
 
 
