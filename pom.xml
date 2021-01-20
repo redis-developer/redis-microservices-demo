@@ -24,8 +24,8 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <version.jedis>3.3.0</version.jedis>
-        <version.jredisgraph>2.0.3-SNAPSHOT</version.jredisgraph>
+        <version.jedis>3.4.1</version.jedis>
+        <version.jredisgraph>2.2.0</version.jredisgraph>
         <version.jredisearch>2.0.0</version.jredisearch>
         <version.debezium>1.1.0.Final</version.debezium>
         <version.springboot>2.2.5.RELEASE</version.springboot>
