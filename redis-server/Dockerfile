@@ -1,8 +1,8 @@
 # a customized version of https://hub.docker.com/r/redislabs/redismod/dockerfile
 
-FROM redislabs/redisearch:2.0.3 as redisearch
-FROM redislabs/redisgraph:2.2.5 as redisgraph
-FROM redislabs/redisgears:1.0.2
+FROM redislabs/redisearch:2.0.5 as redisearch
+FROM redislabs/redisgraph:2.2.11 as redisgraph
+FROM redislabs/redisgears:1.0.5
 
 ENV LD_LIBRARY_PATH /usr/lib/redis/modules
 ENV REDISGRAPH_DEPS libgomp1
