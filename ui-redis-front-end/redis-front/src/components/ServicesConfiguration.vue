@@ -14,7 +14,7 @@
                         <b-button class="btn btn-outline" type="button" id="saveOmdbKey" @click="saveOmdbApiKey">Save</b-button>
                     </div>
                 </div>
-                <span class="small">Total Number of calls : {{omdbApiCalls}} </span>
+                <a href="https://github.com/redis-developer/redis-microservices-demo/blob/140ca77ac40392efe7ad77e2096d722946cbef25/caching-service/src/main/java/io/redis/demos/services/caching/service/WebServiceCachingService.java#L166-L181" target="democode"><span class="small">Total Number of calls : {{omdbApiCalls}} </span></a>
             </div>
             <div class="col-sm">
             </div>

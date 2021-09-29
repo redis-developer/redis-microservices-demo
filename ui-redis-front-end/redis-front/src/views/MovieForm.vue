@@ -76,7 +76,7 @@
           <template>
             <div>
             <b-form-checkbox v-model="callWithCache" name="check-button" switch>  
-              Redis Cache  ( {{ratings.elapsedTimeMs}} ms  | <small>OMDB API Calls:</small> {{ratings.omdbApiCalls}})
+              Redis Cache  ( {{ratings.elapsedTimeMs}} ms  | <a href="https://github.com/redis-developer/redis-microservices-demo/blob/140ca77ac40392efe7ad77e2096d722946cbef25/caching-service/src/main/java/io/redis/demos/services/caching/service/WebServiceCachingService.java#L85-L116" target="democode" ><small>OMDB API Calls:</small> {{ratings.omdbApiCalls}}</a>  )
             </b-form-checkbox>
             </div>
           </template>

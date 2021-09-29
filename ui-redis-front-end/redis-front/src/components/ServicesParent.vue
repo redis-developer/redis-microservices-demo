@@ -30,7 +30,9 @@
 
         <template v-slot:footer>
           <b-alert :variant="streamProducerServiceStatus.messageColor" show>
-            Status : {{streamProducerServiceStatus.call.status}} 
+            <a href="https://github.com/redis-developer/redis-microservices-demo/blob/140ca77ac40392efe7ad77e2096d722946cbef25/db-to-streams-service/src/main/java/io/redis/demos/services/db/events/streams/service/RedisStreamsDebeziumProducer.java#L97-L101" target="democode">
+              Status : {{streamProducerServiceStatus.call.status}}
+            </a>
           </b-alert>
         </template>
       </b-card>
@@ -59,7 +61,9 @@
 
         <template v-slot:footer>
           <b-alert :variant="streamRedisHashIndexedServiceStatus.messageColor" show>
-            Status : {{streamRedisHashIndexedServiceStatus.call.status}} 
+            <a href="https://github.com/redis-developer/redis-microservices-demo/blob/140ca77ac40392efe7ad77e2096d722946cbef25/streams-to-redisearch-service/src/main/java/io/redis/demos/services/search/service/StreamsToRediSearch.java#L351-L358" target="democode" >
+              Status : {{streamRedisHashIndexedServiceStatus.call.status}} 
+            </a>
           </b-alert>
         </template>
       </b-card>
@@ -86,7 +90,9 @@
 
         <template v-slot:footer>
           <b-alert :variant="streamsToGraphServiceStatus.messageColor" show>
-            Status : {{streamsToGraphServiceStatus.call.status}} 
+            <a href="https://github.com/redis-developer/redis-microservices-demo/blob/140ca77ac40392efe7ad77e2096d722946cbef25/streams-to-redisgraph-service/src/main/java/io/redis/demos/services/graph/service/RedisStreamToGraphService.java#L218-L237" target="democode" >
+              Status : {{streamsToGraphServiceStatus.call.status}} 
+            </a>
           </b-alert>
         </template>
       </b-card>
