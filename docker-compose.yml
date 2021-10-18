@@ -2,9 +2,7 @@ version: '3.7'
 services:
 
   app-redis:
-    build:
-      context: ./redis-server
-      dockerfile: Dockerfile
+    image: redislabs/redismod:latest
     ports:
       - "6379:6379"
     networks:
