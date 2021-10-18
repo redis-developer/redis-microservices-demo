@@ -66,7 +66,7 @@
   </b-popover>
 </div>
 
-<a href="https://github.com/tgrall/redis-microservices-demo"><img src="/imgs/forkme_left_red.svg" style="position:absolute;top:0;left:0;z-index:2000;" alt="Fork me on GitHub"></a>
+<a href="https://github.com/redis-developer/redis-microservices-demo"><img src="/imgs/forkme_left_red.svg" style="position:absolute;top:0;left:0;z-index:2000;" alt="Fork me on GitHub"></a>
 
   </div>
 </template>

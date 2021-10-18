@@ -17,7 +17,7 @@ export default {
   },
   created() {
         this.$parent.contextualHelp = "Legacy Application calling a REST API providing SQL data, see "+
-        "<b><a target='_blank' href='https://github.com/tgrall/redis-microservices-demo/blob/master/sql-data-generator/src/main/java/io/redis/demos/debezium/sql/controllers/ActorsAPIController.java'>ActorsAPIController</a></b>";
+        "<b><a target='_blank' href='https://github.com/redis-developer/redis-microservices-demo/blob/master/sql-data-generator/src/main/java/io/redis/demos/debezium/sql/controllers/ActorsAPIController.java'>ActorsAPIController</a></b>";
   }
 };
 </script>
