@@ -27,7 +27,7 @@
       
 
       <b-navbar-nav class="ml-auto">
-        <img src="/imgs/redislabs.png" height="30" />
+        <img src="/imgs/redis-logo-red-white-rgb.png" height="30" />
       </b-navbar-nav>
       
     </b-collapse>
