@@ -299,4 +299,21 @@ public class RedisStreamToGraphService {
        });
     }
 
+        /**
+     * Execute a given Cypher query to the given Graph key ie. graphname
+     */
+
+    public ResultSet executeQuery(String graphName, String queryString)
+    {
+        log.info("Execute query: {} on key: {}",queryString,graphName);
+        ResultSet resultset = null;
+        try {
+           resultset = graph.query( graphName,queryString);
+           System.out.println(resultset.toString());
+           } catch (JedisDataException jde) {
+               log.error(jde.getMessage());
+           }
+           return resultset;
+    }
+
 }

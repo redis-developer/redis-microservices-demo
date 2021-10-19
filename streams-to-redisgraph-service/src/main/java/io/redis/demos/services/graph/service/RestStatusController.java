@@ -3,7 +3,7 @@ package io.redis.demos.services.graph.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
+import com.redislabs.redisgraph.ResultSet;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +56,11 @@ public class RestStatusController {
         result.put("action", "Refresh Relationships");
         redisService.createRelationFromMySQL(type, id);
         return result;
+    }
+
+    @GetMapping("/executeQuery/{graphName}")
+    public ResultSet executeQuery(@PathVariable(name = "graphName") String graphName, @RequestHeader(name="query") String query) {
+        return redisService.executeQuery(graphName, query);
     }
 
 
