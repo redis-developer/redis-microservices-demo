@@ -1,6 +1,13 @@
 FROM openjdk:8-jdk-alpine
 
-COPY target/*.jar /app.jar
+RUN apk update && apk upgrade && \
+  apk add --no-cache maven
+
+COPY . .
+
+RUN mvn package
+
+RUN mv target/*.jar /app.jar
 
 ENV SPRING_DATASOURCE_URL=jdbc:mysql://app-mysql:3306/inventory
 ENV SPRING_DATASOURCE_USERNAME=mysqluser
